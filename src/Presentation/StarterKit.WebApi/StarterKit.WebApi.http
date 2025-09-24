@@ -1,0 +1,6 @@
+@StarterKit.WebApi_HostAddress = http://localhost:5253
+
+GET {{StarterKit.WebApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
