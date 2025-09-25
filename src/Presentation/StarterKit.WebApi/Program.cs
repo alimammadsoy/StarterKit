@@ -123,7 +123,7 @@ builder.Services.AddAuthentication(opt =>
     opt.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
     opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
 
-}).AddJwtBearer("Admin", opt =>
+}).AddJwtBearer(opt =>
 {
     opt.RequireHttpsMetadata = false;
     opt.SaveToken = true;

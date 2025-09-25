@@ -8,9 +8,11 @@ using StarterKit.Application.Features.Commands.AppUser.UpdatePassword;
 
 namespace StarterKit.WebApi.Controllers
 {
+    [Authorize]
     public class UsersController : BaseApiController
     {
         [HttpPost]
+        [AuthorizeDefinition(ActionType = ActionType.Writing, Definition = "Create Users", Menu = "Users")]
         public async Task<IActionResult> CreateUser(CreateUserCommandRequest request)
         {
             var response = await Mediator.Send(request);

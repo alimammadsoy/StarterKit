@@ -20,10 +20,12 @@ namespace StarterKit.Infrastructure.Services.Token
 
         public Application.DTOs.Auth.Token CreateAccessToken(int second, AppUser user)
         {
+
+            var jwtSettings = _configuration.GetSection("JWT");
             Application.DTOs.Auth.Token token = new();
 
             //Security Key'in simetriğini alıyoruz.
-            SymmetricSecurityKey securityKey = new(Encoding.UTF8.GetBytes(_configuration["Token:SecurityKey"]));
+            SymmetricSecurityKey securityKey = new(Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]));
 
             //Şifrelenmiş kimliği oluşturuyoruz.
             SigningCredentials signingCredentials = new(securityKey, SecurityAlgorithms.HmacSha256);
@@ -31,8 +33,8 @@ namespace StarterKit.Infrastructure.Services.Token
             //Oluşturulacak token ayarlarını veriyoruz.
             token.Expiration = DateTime.UtcNow.AddSeconds(second);
             JwtSecurityToken securityToken = new(
-                audience: _configuration["Token:Audience"],
-                issuer: _configuration["Token:Issuer"],
+                audience: jwtSettings["Audience"],
+                issuer: jwtSettings["Issuer"],
                 expires: token.Expiration,
                 notBefore: DateTime.UtcNow,
                 signingCredentials: signingCredentials,

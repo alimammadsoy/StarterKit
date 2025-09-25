@@ -110,7 +110,7 @@ namespace StarterKit.Persistence.Services
                 user = await _userManager.FindByEmailAsync(usernameOrEmail);
 
             if (user == null)
-                throw new NotFoundException();
+                throw new NotFoundException("İstifadəçi tapılmadı");
 
             SignInResult result = await _signInManager.CheckPasswordSignInAsync(user, password, false);
             if (result.Succeeded) //Authentication başarılı!
@@ -119,7 +119,7 @@ namespace StarterKit.Persistence.Services
                 await _userService.UpdateRefreshTokenAsync(token.RefreshToken, user, token.Expiration, 15);
                 return token;
             }
-            throw new NotFoundException();
+            throw new NotFoundException("İstifadəçi adı və ya şifrə yanlışdır");
         }
 
         public async Task<Token> RefreshTokenLoginAsync(string refreshToken)
