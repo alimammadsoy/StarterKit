@@ -1,6 +1,6 @@
 ﻿using MediatR;
 using StarterKit.Application.Abstractions.Services;
-using StarterKit.Application.Features.Command.AppUser.DTOs;
+using StarterKit.Application.DTOs.Auth;
 
 namespace StarterKit.Application.Features.Command.AppUser.LoginUser
 {
@@ -16,7 +16,7 @@ namespace StarterKit.Application.Features.Command.AppUser.LoginUser
         {
             var token = await _authService.LoginAsync(request.UsernameOrEmail, request.Password, 7200);
 
-            return new() { Token = token.AccessToken, RefreshToken = token.RefreshToken, ExpireAt = token.Expiration };
+            return new() { AccessToken = token.AccessToken, RefreshToken = token.RefreshToken, Expiration = token.Expiration };
         }
     }
 }

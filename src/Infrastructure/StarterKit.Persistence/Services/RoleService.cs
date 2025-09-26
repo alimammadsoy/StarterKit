@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using StarterKit.Application.Abstractions.Services;
+using StarterKit.Application.Exceptions;
 using StarterKit.Domain.Entities.Identity;
 
 namespace StarterKit.Persistence.Services
@@ -23,6 +24,8 @@ namespace StarterKit.Persistence.Services
         public async Task<bool> DeleteRole(string id)
         {
             AppRole appRole = await _roleManager.FindByIdAsync(id);
+            if (appRole == null)
+                throw new NotFoundException("Rol tapılmadı");
             IdentityResult result = await _roleManager.DeleteAsync(appRole);
             return result.Succeeded;
         }
@@ -44,12 +47,20 @@ namespace StarterKit.Persistence.Services
         public async Task<(string id, string name)> GetRoleById(string id)
         {
             string role = await _roleManager.GetRoleIdAsync(new() { Id = id });
+            
+            if (role == null)
+                throw new NotFoundException("Rol tapılmadı");
+
             return (id, role);
         }
 
         public async Task<bool> UpdateRole(string id, string name)
         {
             AppRole role = await _roleManager.FindByIdAsync(id);
+
+            if (role == null)
+                throw new NotFoundException("Rol tapılmadı");
+
             role.Name = name;
             IdentityResult result = await _roleManager.UpdateAsync(role);
             return result.Succeeded;

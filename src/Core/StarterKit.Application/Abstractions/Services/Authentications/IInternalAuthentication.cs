@@ -2,7 +2,7 @@
 {
     public interface IInternalAuthentication
     {
-        Task<DTOs.Auth.Token> LoginAsync(string usernameOrEmail, string password, int accessTokenLifeTime);
-        Task<DTOs.Auth.Token> RefreshTokenLoginAsync(string refreshToken);
+        Task<DTOs.Auth.JwtTokenDto> LoginAsync(string usernameOrEmail, string password, int accessTokenLifeTime);
+        Task<DTOs.Auth.JwtTokenDto> RefreshTokenLoginAsync(string refreshToken);
     }
 }

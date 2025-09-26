@@ -23,8 +23,4 @@
     <ProjectReference Include="..\StarterKit.Domain\StarterKit.Domain.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Features\Queries\" />
-  </ItemGroup>
-
 </Project>

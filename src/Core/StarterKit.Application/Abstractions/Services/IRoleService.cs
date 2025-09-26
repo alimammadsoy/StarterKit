@@ -1,4 +1,6 @@
-﻿namespace StarterKit.Application.Abstractions.Services
+﻿using StarterKit.Domain.Entities.Identity;
+
+namespace StarterKit.Application.Abstractions.Services
 {
     public interface IRoleService
     {

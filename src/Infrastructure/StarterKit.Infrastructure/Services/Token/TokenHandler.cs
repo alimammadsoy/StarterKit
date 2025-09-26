@@ -18,11 +18,11 @@ namespace StarterKit.Infrastructure.Services.Token
             _configuration = configuration;
         }
 
-        public Application.DTOs.Auth.Token CreateAccessToken(int second, AppUser user)
+        public Application.DTOs.Auth.JwtTokenDto CreateAccessToken(int second, AppUser user)
         {
 
             var jwtSettings = _configuration.GetSection("JWT");
-            Application.DTOs.Auth.Token token = new();
+            Application.DTOs.Auth.JwtTokenDto token = new();
 
             //Security Key'in simetriğini alıyoruz.
             SymmetricSecurityKey securityKey = new(Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]));

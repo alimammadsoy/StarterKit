@@ -4,7 +4,7 @@ namespace StarterKit.Application.Abstractions.Token
 {
     public interface ITokenHandler
     {
-        DTOs.Auth.Token CreateAccessToken(int second, AppUser appUser);
+        DTOs.Auth.JwtTokenDto CreateAccessToken(int second, AppUser appUser);
         string CreateRefreshToken();
     }
 }

@@ -5,10 +5,11 @@ using StarterKit.Application.Enums;
 using StarterKit.Application.Features.Command.AppUser.AssignRoleToUser;
 using StarterKit.Application.Features.Commands.AppUser.CreateUser;
 using StarterKit.Application.Features.Commands.AppUser.UpdatePassword;
+using StarterKit.Application.Features.Queries.AppUser.GetAllUsers;
+using StarterKit.Application.Features.Queries.AppUser.GetRolesToUser;
 
 namespace StarterKit.WebApi.Controllers
 {
-    [Authorize]
     public class UsersController : BaseApiController
     {
         [HttpPost]
@@ -27,26 +28,26 @@ namespace StarterKit.WebApi.Controllers
 
         }
 
-       /* [HttpGet]
-        [Authorize(AuthenticationSchemes = "Admin")]
+        [HttpGet]
+        [Authorize]
         [AuthorizeDefinition(ActionType = ActionType.Reading, Definition = "Get All Users", Menu = "Users")]
-        public async Task<IActionResult> GetAllUsers([FromQuery] GetAllUsersQueryRequest getAllUsersQueryRequest)
+        public async Task<IActionResult> GetAllUsers([FromQuery] GetAllUsersQueryRequest request)
         {
-            GetAllUsersQueryResponse response = await Mediator.Send(getAllUsersQueryRequest);
+            var response = await Mediator.Send(request);
             return Ok(response);
         }
 
         [HttpGet("get-roles-to-user/{UserId}")]
-        [Authorize(AuthenticationSchemes = "Admin")]
+        [Authorize]
         [AuthorizeDefinition(ActionType = ActionType.Reading, Definition = "Get Roles To Users", Menu = "Users")]
-        public async Task<IActionResult> GetRolesToUser([FromRoute] GetRolesToUserQueryRequest getRolesToUserQueryRequest)
+        public async Task<IActionResult> GetRolesToUser([FromRoute] GetRolesToUserQueryRequest request)
         {
-            GetRolesToUserQueryResponse response = await Mediator.Send(getRolesToUserQueryRequest);
+            var response = await Mediator.Send(request);
             return Ok(response);
-        }*/
+        }
 
         [HttpPost("assign-role-to-user")]
-        [Authorize(AuthenticationSchemes = "Admin")]
+        [Authorize]
         [AuthorizeDefinition(ActionType = ActionType.Reading, Definition = "Assign Role To User", Menu = "Users")]
         public async Task<IActionResult> AssignRoleToUser(AssignRoleToUserCommandRequest request)
         {

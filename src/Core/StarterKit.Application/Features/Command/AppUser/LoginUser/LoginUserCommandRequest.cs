@@ -1,5 +1,5 @@
 ﻿using MediatR;
-using StarterKit.Application.Features.Command.AppUser.DTOs;
+using StarterKit.Application.DTOs.Auth;
 
 namespace StarterKit.Application.Features.Command.AppUser.LoginUser
 {

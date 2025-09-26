@@ -1,6 +1,6 @@
 ﻿namespace StarterKit.Application.DTOs.Auth
 {
-    public class Token
+    public class JwtTokenDto
     {
         public string AccessToken { get; set; }
         public DateTime Expiration { get; set; }
