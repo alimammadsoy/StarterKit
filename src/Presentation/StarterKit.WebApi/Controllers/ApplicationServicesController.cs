@@ -6,14 +6,14 @@ using StarterKit.Application.Enums;
 
 namespace StarterKit.WebApi.Controllers
 {
-    [Authorize]
-    public class ApplicationServicesController : BaseApiController
+    //[Authorize]
+    /*public class ApplicationServicesController : BaseApiController
     {
         private readonly IApplicationService _applicationService;
 
         public ApplicationServicesController(IApplicationService applicationService)
         {
-            _applicationService = applicationService;
+            _applicationService = applicationService;    
         }
 
         [HttpGet]
@@ -23,5 +23,5 @@ namespace StarterKit.WebApi.Controllers
             var datas = _applicationService.GetAuthorizeDefinitionEndpoints(typeof(Program));
             return Ok(datas);
         }
-    }
+    }*/
 }

@@ -1,24 +1,46 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Identity;
+using StarterKit.Application.Consts;
 using StarterKit.Application.Abstractions.Services;
+using StarterKit.Domain.Entities.Identity;
+using Microsoft.EntityFrameworkCore;
+using StarterKit.Application.Exceptions;
 
 namespace StarterKit.Application.Features.Commands.Role.UpdateRole
 {
-    public class UpdateRoleCommandHandler : IRequestHandler<UpdateRoleCommandRequest, UpdateRoleCommandResponse>
+    public class UpdateRoleCommandHandler : IRequestHandler<UpdateRoleCommandRequest, ResponseDto>
     {
-        readonly IRoleService _roleService;
+        private readonly RoleManager<AppRole> _roleManager;
+        private readonly IAuthorizationEndpointService _authorizationEndpointService;
 
-        public UpdateRoleCommandHandler(IRoleService roleService)
+        public UpdateRoleCommandHandler(RoleManager<AppRole> roleManager, IAuthorizationEndpointService authorizationEndpointService)
         {
-            _roleService = roleService;
+            _roleManager = roleManager;
+            _authorizationEndpointService = authorizationEndpointService;
         }
 
-        public async Task<UpdateRoleCommandResponse> Handle(UpdateRoleCommandRequest request, CancellationToken cancellationToken)
+        public async Task<ResponseDto> Handle(UpdateRoleCommandRequest request, CancellationToken cancellationToken)
         {
-            var result = await _roleService.UpdateRole(request.Id, request.Name);
-            return new()
+            var role = await _roleManager.Roles.FirstOrDefaultAsync(r => r.Id == request.Id, cancellationToken);
+            if (role == null)
+                throw new NotFoundException("Rol tapılmadı");
+
+            role.Name = request.Name;
+            role.NormalizedName = request.Name?.ToUpperInvariant();
+
+            var updateResult = await _roleManager.UpdateAsync(role);
+            if (!updateResult.Succeeded)
             {
-                Succeeded = result
-            };
+                var errors = string.Join("; ", updateResult.Errors.Select(e => e.Description));
+                return new ResponseDto { Message = $"Failed to update role: {errors}" };
+            }
+            
+            if (request.PermissionIds != null)
+            {
+                await _authorizationEndpointService.AssignEndpointsToRoleAsync(request.Id, request.PermissionIds);
+            }
+
+            return new ResponseDto { Message = "Rol uğurla redaktə edildi." };
         }
     }
 }

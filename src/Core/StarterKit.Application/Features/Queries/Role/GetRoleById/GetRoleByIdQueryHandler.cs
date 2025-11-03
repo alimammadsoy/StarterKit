@@ -1,5 +1,7 @@
 ﻿using MediatR;
 using StarterKit.Application.Abstractions.Services;
+using StarterKit.Application.DTOs.Endpoint;
+using StarterKit.Application.Exceptions;
 
 namespace StarterKit.Application.Features.Queries.Role.GetRoleById
 {
@@ -14,11 +16,22 @@ namespace StarterKit.Application.Features.Queries.Role.GetRoleById
 
         public async Task<GetRoleByIdQueryResponse> Handle(GetRoleByIdQueryRequest request, CancellationToken cancellationToken)
         {
-            var data = await _roleService.GetRoleById(request.Id);
+            var role = await _roleService.GetRoleById(request.Id);
+
+            if (role is null)
+                throw new NotFoundException("Rol tapılmadı");
+
+
             return new()
             {
-                Id = data.id,
-                Name = data.name
+                Id = role.Id,
+                Name = role.Name,
+                Permissions = role.Endpoints?
+                    .Select(e => new EndpointDto
+                    {
+                        Id = e.Id,
+                        Name = e.Definition
+                    }).ToList() ?? new List<EndpointDto>()
             };
         }
     }

@@ -143,6 +143,7 @@ builder.Services.AddAuthentication(opt =>
         ClockSkew = TimeSpan.Zero,
 
         NameClaimType = ClaimTypes.Name,
+        RoleClaimType = ClaimTypes.Role
     };
     opt.Events = new JwtBearerEvents()
     {
@@ -154,13 +155,13 @@ builder.Services.AddAuthentication(opt =>
 
         OnTokenValidated = context =>
         {
-            var tokenHandler = new JwtSecurityTokenHandler();
+          /*  var tokenHandler = new JwtSecurityTokenHandler();
             var token = context.SecurityToken as JwtSecurityToken;
 
             if (token == null || token.ValidTo < DateTime.UtcNow) // Token expired?
             {
                 context.Fail("Token has expired.");
-            }
+            }*/
 
             return Task.CompletedTask;
         },
@@ -204,8 +205,6 @@ builder.Configuration
 
 var app = builder.Build();
 
-app.UseMiddlewares();
-
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -241,6 +240,8 @@ app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseMiddlewares();
 
 app.MapControllers();
 

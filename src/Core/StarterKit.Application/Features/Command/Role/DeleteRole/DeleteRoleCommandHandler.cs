@@ -1,9 +1,10 @@
 ﻿using MediatR;
 using StarterKit.Application.Abstractions.Services;
+using StarterKit.Application.Consts;
 
 namespace StarterKit.Application.Features.Commands.Role.DeleteRole
 {
-    public class DeleteRoleCommandHandler : IRequestHandler<DeleteRoleCommandRequest, DeleteRoleCommandResponse>
+    public class DeleteRoleCommandHandler : IRequestHandler<DeleteRoleCommandRequest, ResponseDto>
     {
         readonly IRoleService _roleService;
 
@@ -12,12 +13,12 @@ namespace StarterKit.Application.Features.Commands.Role.DeleteRole
             _roleService = roleService;
         }
 
-        public async Task<DeleteRoleCommandResponse> Handle(DeleteRoleCommandRequest request, CancellationToken cancellationToken)
+        public async Task<ResponseDto> Handle(DeleteRoleCommandRequest request, CancellationToken cancellationToken)
         {
             var result = await _roleService.DeleteRole(request.Id);
             return new()
             {
-                Succeeded = result
+                Message = "Rol uğurla silindi"
             };
         }
     }

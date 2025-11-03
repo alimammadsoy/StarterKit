@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using StarterKit.Application.Abstractions.Token;
 using StarterKit.Domain.Entities.Identity;
@@ -12,33 +13,51 @@ namespace StarterKit.Infrastructure.Services.Token
     public class TokenHandler : ITokenHandler
     {
         readonly IConfiguration _configuration;
+        private readonly UserManager<AppUser> _userManager;
 
-        public TokenHandler(IConfiguration configuration)
+        public TokenHandler(IConfiguration configuration, UserManager<AppUser> userManager)
         {
             _configuration = configuration;
+            _userManager = userManager;
         }
 
-        public Application.DTOs.Auth.JwtTokenDto CreateAccessToken(int second, AppUser user)
+        public async Task<Application.DTOs.Auth.JwtTokenDto> CreateAccessToken(int second, AppUser user)
         {
 
             var jwtSettings = _configuration.GetSection("JWT");
             Application.DTOs.Auth.JwtTokenDto token = new();
 
-            //Security Key'in simetriğini alıyoruz.
             SymmetricSecurityKey securityKey = new(Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]));
-
-            //Şifrelenmiş kimliği oluşturuyoruz.
             SigningCredentials signingCredentials = new(securityKey, SecurityAlgorithms.HmacSha256);
 
-            //Oluşturulacak token ayarlarını veriyoruz.
             token.Expiration = DateTime.UtcNow.AddSeconds(second);
+
+            var claims = new List<Claim>
+            {
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
+            };
+
+            if (!string.IsNullOrEmpty(user.UserName))
+                claims.Add(new Claim(ClaimTypes.Name, user.UserName));
+
+            // Synchronous/blocking role lookup (quick fix). Prefer async refactor below.
+            var roles = await _userManager.GetRolesAsync(user);
+            if (roles != null && roles.Any())
+            {
+                // Add ClaimTypes.Role so IsInRole works with default RoleClaimType
+                claims.AddRange(roles.Select(r => new Claim(ClaimTypes.Role, r)));
+                // Optionally also add "role" for clients that expect that claim name
+                claims.AddRange(roles.Select(r => new Claim("role", r)));
+            }
+
             JwtSecurityToken securityToken = new(
                 audience: jwtSettings["Audience"],
                 issuer: jwtSettings["Issuer"],
                 expires: token.Expiration,
                 notBefore: DateTime.UtcNow,
                 signingCredentials: signingCredentials,
-                claims: new List<Claim> { new(ClaimTypes.Name, user.UserName) }
+                claims: claims
                 );
 
             //Token oluşturucu sınıfından bir örnek alalım.

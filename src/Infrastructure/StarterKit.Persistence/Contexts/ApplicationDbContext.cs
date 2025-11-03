@@ -6,7 +6,7 @@ using StarterKit.Domain.Entities.MenuAggregate;
 
 namespace StarterKit.Persistence.Contexts
 {
-    public class ApplicationDbContext : IdentityDbContext<AppUser, AppRole, string>
+    public class ApplicationDbContext : IdentityDbContext<AppUser, AppRole, int>
     {
         public ApplicationDbContext(DbContextOptions options) : base(options) { }
 

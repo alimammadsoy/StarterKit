@@ -1,7 +1,7 @@
 ﻿using MediatR;
 using StarterKit.Application.Consts;
 
-namespace StarterKit.Application.Features.Commands.AppUser.CreateUser
+namespace StarterKit.Application.Features.Command.AppUser.CreateUser
 {
     public class CreateUserCommandRequest : IRequest<ResponseDto>
     {
@@ -10,5 +10,6 @@ namespace StarterKit.Application.Features.Commands.AppUser.CreateUser
         public string Email { get; set; }
         public string Password { get; set; }
         public string PasswordConfirm { get; set; }
+        public int[] RoleIds { get; set; }
     }
 }

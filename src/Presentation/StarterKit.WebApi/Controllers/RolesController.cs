@@ -24,7 +24,7 @@ namespace StarterKit.WebApi.Controllers
 
         [HttpGet("{Id}")]
         [AuthorizeDefinition(ActionType = ActionType.Reading, Definition = "Get Role By Id", Menu = "Roles")]
-        public async Task<IActionResult> GetRoles([FromRoute] GetRoleByIdQueryRequest request)
+        public async Task<IActionResult> GetRoleById([FromRoute] GetRoleByIdQueryRequest request)
         {
             var response = await Mediator.Send(request);
             return Ok(response);
@@ -38,10 +38,11 @@ namespace StarterKit.WebApi.Controllers
             return Ok(response);
         }
 
-        [HttpPut("{Id}")]
+        [HttpPut("{id}")]
         [AuthorizeDefinition(ActionType = ActionType.Updating, Definition = "Update Role", Menu = "Roles")]
-        public async Task<IActionResult> UpdateRole([FromBody, FromRoute] UpdateRoleCommandRequest request)
+        public async Task<IActionResult> UpdateRole([FromRoute] int id, [FromBody] UpdateRoleCommandRequest request)
         {
+            request.Id = id;
             var response = await Mediator.Send(request);
             return Ok(response);
         }

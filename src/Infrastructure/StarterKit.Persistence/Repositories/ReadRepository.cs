@@ -2,12 +2,7 @@
 using StarterKit.Application.Repositories;
 using StarterKit.Domain.Entities.Common;
 using StarterKit.Persistence.Contexts;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace StarterKit.Persistence.Repositories
 {
@@ -49,7 +44,7 @@ namespace StarterKit.Persistence.Repositories
             return await query.FirstOrDefaultAsync(method);
         }
 
-        public async Task<T> GetByIdAsync(string id, Func<IQueryable<T>, IQueryable<T>> include = null, bool tracking = true)
+        public async Task<T> GetByIdAsync(int id, Func<IQueryable<T>, IQueryable<T>> include = null, bool tracking = true)
         {
             var query = Table.AsQueryable();
             if (!tracking)
@@ -57,7 +52,7 @@ namespace StarterKit.Persistence.Repositories
             if (include is not null)
                 query = include(query);
 
-            return await query.FirstOrDefaultAsync(data => data.Id == Guid.Parse(id) && !data.IsDeleted);
+            return await query.FirstOrDefaultAsync(data => data.Id == id && !data.IsDeleted);
         }
     }
 }

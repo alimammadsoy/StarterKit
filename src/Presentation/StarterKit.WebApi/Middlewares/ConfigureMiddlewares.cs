@@ -7,7 +7,8 @@ namespace StarterKit.WebApi.Middlewares
         public static void UseMiddlewares(this IApplicationBuilder app)
         {
             app.UseMiddleware<AuthenticationMiddleware>();
-            app.UseMiddleware<ExceptionHandlingMiddleware>();  
+            app.UseMiddleware<ExceptionHandlingMiddleware>();
+            app.UseMiddleware<RolePermissionMiddleware>();
         }
     }
 }

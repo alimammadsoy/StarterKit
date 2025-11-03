@@ -4,8 +4,8 @@ using System.Net;
 
 namespace StarterKit.Domain.Entities.Identity
 {
-    public class AppRole : IdentityRole<string>
+    public class AppRole : IdentityRole<int>
     {
-        public ICollection<Endpoint> Endpoints { get; set; }
+        public ICollection<Endpoint> Endpoints { get; set; } = new List<Endpoint>();
     }
 }

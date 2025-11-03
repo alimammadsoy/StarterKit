@@ -2,7 +2,7 @@
 
 public abstract class Entity
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     public bool IsDeleted { get; set; }
     public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
     public bool IsTransient()

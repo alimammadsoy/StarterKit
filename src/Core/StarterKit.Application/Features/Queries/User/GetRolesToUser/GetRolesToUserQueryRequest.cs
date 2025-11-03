@@ -1,9 +1,9 @@
 ﻿using MediatR;
 
-namespace StarterKit.Application.Features.Queries.AppUser.GetRolesToUser
+namespace StarterKit.Application.Features.Queries.User.GetRolesToUser
 {
     public class GetRolesToUserQueryRequest : IRequest<GetRolesToUserQueryResponse>
     {
-        public string UserId { get; set; }
+        public int UserId { get; set; }
     }
 }

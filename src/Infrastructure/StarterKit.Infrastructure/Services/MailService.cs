@@ -37,13 +37,13 @@ namespace StarterKit.Infrastructure.Services
             await smtp.SendMailAsync(mail);
         }
 
-        public async Task SendPasswordResetMailAsync(string to, string userId, string resetToken)
+        public async Task SendPasswordResetMailAsync(string to, int userId, string resetToken)
         {
             StringBuilder mail = new();
             mail.AppendLine("Merhaba<br>Eğer yeni şifre talebinde bulunduysanız aşağıdaki linkten şifrenizi yenileyebilirsiniz.<br><strong><a target=\"_blank\" href=\"");
             mail.AppendLine(_configuration["AngularClientUrl"]);
             mail.AppendLine("/update-password/");
-            mail.AppendLine(userId);
+            mail.AppendLine(userId.ToString());
             mail.AppendLine("/");
             mail.AppendLine(resetToken);
             mail.AppendLine("\">Yeni şifre talebi için tıklayınız...</a></strong><br><br><span style=\"font-size:12px;\">NOT : Eğer ki bu talep tarafınızca gerçekleştirilmemişse lütfen bu maili ciddiye almayınız.</span><br>Saygılarımızla...<br><br><br>NG - Mini|E-Ticaret");

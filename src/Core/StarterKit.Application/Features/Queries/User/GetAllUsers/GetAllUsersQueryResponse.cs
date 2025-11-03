@@ -1,4 +1,4 @@
-﻿namespace StarterKit.Application.Features.Queries.AppUser.GetAllUsers
+﻿namespace StarterKit.Application.Features.Queries.User.GetAllUsers
 {
     public class GetAllUsersQueryResponse
     {

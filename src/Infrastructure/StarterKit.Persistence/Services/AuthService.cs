@@ -45,7 +45,6 @@ namespace StarterKit.Persistence.Services
                 {
                     user = new()
                     {
-                        Id = Guid.NewGuid().ToString(),
                         Email = email,
                         UserName = email,
                         NameSurname = name
@@ -59,7 +58,7 @@ namespace StarterKit.Persistence.Services
             {
                 await _userManager.AddLoginAsync(user, info); //AspNetUserLogins
 
-                JwtTokenDto token = _tokenHandler.CreateAccessToken(accessTokenLifeTime, user);
+                JwtTokenDto token = await _tokenHandler.CreateAccessToken(accessTokenLifeTime, user);
                 await _userService.UpdateRefreshTokenAsync(token.RefreshToken, user, token.Expiration, 15);
                 return token;
             }
@@ -112,10 +111,13 @@ namespace StarterKit.Persistence.Services
             if (user == null)
                 throw new NotFoundException("İstifadəçi tapılmadı");
 
+            if (user.IsDeleted)
+                throw new NotFoundException("İstifadəçi tapılmadı");
+
             SignInResult result = await _signInManager.CheckPasswordSignInAsync(user, password, false);
             if (result.Succeeded) //Authentication başarılı!
             {
-                JwtTokenDto token = _tokenHandler.CreateAccessToken(accessTokenLifeTime, user);
+                JwtTokenDto token = await _tokenHandler.CreateAccessToken(accessTokenLifeTime, user);
                 await _userService.UpdateRefreshTokenAsync(token.RefreshToken, user, token.Expiration, 15);
                 return token;
             }
@@ -125,9 +127,9 @@ namespace StarterKit.Persistence.Services
         public async Task<JwtTokenDto> RefreshTokenLoginAsync(string refreshToken)
         {
             AppUser? user = await _userManager.Users.FirstOrDefaultAsync(u => u.RefreshToken == refreshToken);
-            if (user != null && user?.RefreshTokenEndDate > DateTime.UtcNow)
+            if (user != null && user?.RefreshTokenEndDate > DateTime.UtcNow && !user.IsDeleted)
             {
-                JwtTokenDto token = _tokenHandler.CreateAccessToken(7200, user);
+                JwtTokenDto token = await _tokenHandler.CreateAccessToken(7200, user);
                 await _userService.UpdateRefreshTokenAsync(token.RefreshToken, user, token.Expiration, 300);
                 return token;
             }

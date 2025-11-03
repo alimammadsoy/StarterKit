@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using StarterKit.Application.Abstractions.Services;
 using StarterKit.Application.Exceptions;
 using StarterKit.Domain.Entities.Identity;
@@ -16,47 +17,40 @@ namespace StarterKit.Persistence.Services
 
         public async Task<bool> CreateRole(string name)
         {
-            IdentityResult result = await _roleManager.CreateAsync(new() { Id = Guid.NewGuid().ToString(), Name = name });
+            IdentityResult result = await _roleManager.CreateAsync(new() { Name = name });
 
             return result.Succeeded;
         }
 
-        public async Task<bool> DeleteRole(string id)
+        public async Task<bool> DeleteRole(int id)
         {
-            AppRole appRole = await _roleManager.FindByIdAsync(id);
+            AppRole appRole = await _roleManager.FindByIdAsync(id.ToString());
             if (appRole == null)
                 throw new NotFoundException("Rol tapılmadı");
             IdentityResult result = await _roleManager.DeleteAsync(appRole);
             return result.Succeeded;
         }
 
-        public (object, int) GetAllRoles(int page, int size)
+        public IQueryable<AppRole> GetAllRolesAsync()
         {
-            var query = _roleManager.Roles;
-
-            IQueryable<AppRole> rolesQuery = null;
-
-            if (page != -1 && size != -1)
-                rolesQuery = query.Skip(page * size).Take(size);
-            else
-                rolesQuery = query;
-
-            return (rolesQuery.Select(r => new { r.Id, r.Name }), query.Count());
+            return _roleManager.Roles.OrderBy(r => r.Id);
         }
 
-        public async Task<(string id, string name)> GetRoleById(string id)
+        public async Task<AppRole> GetRoleById(int id)
         {
-            string role = await _roleManager.GetRoleIdAsync(new() { Id = id });
-            
+            var role = await _roleManager.Roles
+                .Include(r => r.Endpoints)
+                .FirstOrDefaultAsync(r => r.Id == id);
+
             if (role == null)
                 throw new NotFoundException("Rol tapılmadı");
 
-            return (id, role);
+            return role;
         }
 
-        public async Task<bool> UpdateRole(string id, string name)
+        public async Task<bool> UpdateRole(int id, string name)
         {
-            AppRole role = await _roleManager.FindByIdAsync(id);
+            AppRole role = await _roleManager.FindByIdAsync(id.ToString());
 
             if (role == null)
                 throw new NotFoundException("Rol tapılmadı");

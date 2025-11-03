@@ -24,12 +24,12 @@ namespace StarterKit.Persistence.Migrations
 
             modelBuilder.Entity("AppRoleEndpoint", b =>
                 {
-                    b.Property<Guid>("EndpointsId")
-                        .HasColumnType("uuid")
+                    b.Property<int>("EndpointsId")
+                        .HasColumnType("integer")
                         .HasColumnName("endpoints_id");
 
-                    b.Property<string>("RolesId")
-                        .HasColumnType("text")
+                    b.Property<int>("RolesId")
+                        .HasColumnType("integer")
                         .HasColumnName("roles_id");
 
                     b.HasKey("EndpointsId", "RolesId")
@@ -41,7 +41,7 @@ namespace StarterKit.Persistence.Migrations
                     b.ToTable("app_role_endpoint", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -58,9 +58,8 @@ namespace StarterKit.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("claim_value");
 
-                    b.Property<string>("RoleId")
-                        .IsRequired()
-                        .HasColumnType("text")
+                    b.Property<int>("RoleId")
+                        .HasColumnType("integer")
                         .HasColumnName("role_id");
 
                     b.HasKey("Id")
@@ -72,7 +71,7 @@ namespace StarterKit.Persistence.Migrations
                     b.ToTable("AspNetRoleClaims", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<int>", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -89,9 +88,8 @@ namespace StarterKit.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("claim_value");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("text")
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer")
                         .HasColumnName("user_id");
 
                     b.HasKey("Id")
@@ -103,7 +101,7 @@ namespace StarterKit.Persistence.Migrations
                     b.ToTable("AspNetUserClaims", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<int>", b =>
                 {
                     b.Property<string>("LoginProvider")
                         .HasColumnType("text")
@@ -117,9 +115,8 @@ namespace StarterKit.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("provider_display_name");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("text")
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer")
                         .HasColumnName("user_id");
 
                     b.HasKey("LoginProvider", "ProviderKey")
@@ -131,14 +128,14 @@ namespace StarterKit.Persistence.Migrations
                     b.ToTable("AspNetUserLogins", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<int>", b =>
                 {
-                    b.Property<string>("UserId")
-                        .HasColumnType("text")
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer")
                         .HasColumnName("user_id");
 
-                    b.Property<string>("RoleId")
-                        .HasColumnType("text")
+                    b.Property<int>("RoleId")
+                        .HasColumnType("integer")
                         .HasColumnName("role_id");
 
                     b.HasKey("UserId", "RoleId")
@@ -150,10 +147,10 @@ namespace StarterKit.Persistence.Migrations
                     b.ToTable("AspNetUserRoles", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<int>", b =>
                 {
-                    b.Property<string>("UserId")
-                        .HasColumnType("text")
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer")
                         .HasColumnName("user_id");
 
                     b.Property<string>("LoginProvider")
@@ -176,10 +173,16 @@ namespace StarterKit.Persistence.Migrations
 
             modelBuilder.Entity("StarterKit.Domain.Entities.EndpointAggregate.Endpoint", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
+                        .HasColumnType("integer")
                         .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ActionName")
+                        .HasColumnType("text")
+                        .HasColumnName("action_name");
 
                     b.Property<string>("ActionType")
                         .HasColumnType("text")
@@ -188,6 +191,10 @@ namespace StarterKit.Persistence.Migrations
                     b.Property<string>("Code")
                         .HasColumnType("text")
                         .HasColumnName("code");
+
+                    b.Property<string>("ControllerName")
+                        .HasColumnType("text")
+                        .HasColumnName("controller_name");
 
                     b.Property<int>("CreatedById")
                         .HasColumnType("integer")
@@ -213,8 +220,8 @@ namespace StarterKit.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("last_update_date_time");
 
-                    b.Property<Guid?>("MenuId")
-                        .HasColumnType("uuid")
+                    b.Property<int?>("MenuId")
+                        .HasColumnType("integer")
                         .HasColumnName("menu_id");
 
                     b.Property<int?>("UpdateById")
@@ -232,9 +239,12 @@ namespace StarterKit.Persistence.Migrations
 
             modelBuilder.Entity("StarterKit.Domain.Entities.Identity.AppRole", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasColumnType("text")
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
                         .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
@@ -263,9 +273,12 @@ namespace StarterKit.Persistence.Migrations
 
             modelBuilder.Entity("StarterKit.Domain.Entities.Identity.AppUser", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasColumnType("text")
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
                         .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("integer")
@@ -284,6 +297,10 @@ namespace StarterKit.Persistence.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("boolean")
                         .HasColumnName("email_confirmed");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("boolean")
@@ -355,10 +372,12 @@ namespace StarterKit.Persistence.Migrations
 
             modelBuilder.Entity("StarterKit.Domain.Entities.MenuAggregate.Menu", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
+                        .HasColumnType("integer")
                         .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("CreatedById")
                         .HasColumnType("integer")
@@ -407,7 +426,7 @@ namespace StarterKit.Persistence.Migrations
                         .HasConstraintName("fk_app_role_endpoint_roles_roles_id");
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
                 {
                     b.HasOne("StarterKit.Domain.Entities.Identity.AppRole", null)
                         .WithMany()
@@ -417,7 +436,7 @@ namespace StarterKit.Persistence.Migrations
                         .HasConstraintName("fk_asp_net_role_claims_asp_net_roles_role_id");
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<int>", b =>
                 {
                     b.HasOne("StarterKit.Domain.Entities.Identity.AppUser", null)
                         .WithMany()
@@ -427,7 +446,7 @@ namespace StarterKit.Persistence.Migrations
                         .HasConstraintName("fk_asp_net_user_claims_asp_net_users_user_id");
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<int>", b =>
                 {
                     b.HasOne("StarterKit.Domain.Entities.Identity.AppUser", null)
                         .WithMany()
@@ -437,7 +456,7 @@ namespace StarterKit.Persistence.Migrations
                         .HasConstraintName("fk_asp_net_user_logins_asp_net_users_user_id");
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<int>", b =>
                 {
                     b.HasOne("StarterKit.Domain.Entities.Identity.AppRole", null)
                         .WithMany()
@@ -454,7 +473,7 @@ namespace StarterKit.Persistence.Migrations
                         .HasConstraintName("fk_asp_net_user_roles_asp_net_users_user_id");
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<int>", b =>
                 {
                     b.HasOne("StarterKit.Domain.Entities.Identity.AppUser", null)
                         .WithMany()

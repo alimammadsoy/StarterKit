@@ -1,7 +1,7 @@
 ﻿using MediatR;
 using StarterKit.Application.Abstractions.Services;
 
-namespace StarterKit.Application.Features.Queries.AppUser.GetAllUsers
+namespace StarterKit.Application.Features.Queries.User.GetAllUsers
 {
     public class GetAllUsersQueryHandler : IRequestHandler<GetAllUsersQueryRequest, GetAllUsersQueryResponse>
     {
@@ -14,7 +14,7 @@ namespace StarterKit.Application.Features.Queries.AppUser.GetAllUsers
 
         public async Task<GetAllUsersQueryResponse> Handle(GetAllUsersQueryRequest request, CancellationToken cancellationToken)
         {
-            var users = await _userService.GetAllUsersAsync(request.Page, request.Size);
+            var users = await _userService.GetAllUsersAsync(request.PageNumber, request.PageSize);
             return new()
             {
                 Users = users,

@@ -1,4 +1,4 @@
-﻿namespace StarterKit.Application.Features.Queries.AppUser.GetRolesToUser
+﻿namespace StarterKit.Application.Features.Queries.User.GetRolesToUser
 {
     public class GetRolesToUserQueryResponse
     {

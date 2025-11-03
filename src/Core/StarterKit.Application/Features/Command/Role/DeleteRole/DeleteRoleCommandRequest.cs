@@ -1,9 +1,10 @@
 ﻿using MediatR;
+using StarterKit.Application.Consts;
 
 namespace StarterKit.Application.Features.Commands.Role.DeleteRole
 {
-    public class DeleteRoleCommandRequest : IRequest<DeleteRoleCommandResponse>
+    public class DeleteRoleCommandRequest : IRequest<ResponseDto>
     {
-        public string Id { get; set; }
+        public int Id { get; set; }
     }
 }

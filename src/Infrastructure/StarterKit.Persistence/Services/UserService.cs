@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using StarterKit.Application.Abstractions.Services;
+using StarterKit.Application.DTOs.Role;
 using StarterKit.Application.DTOs.User;
 using StarterKit.Application.Exceptions;
 using StarterKit.Application.Helpers;
@@ -12,14 +13,16 @@ namespace StarterKit.Persistence.Services
 {
     public class UserService : IUserService
     {
-        readonly UserManager<Domain.Entities.Identity.AppUser> _userManager;
-        readonly IEndpointReadRepository _endpointReadRepository;
+        private readonly UserManager<Domain.Entities.Identity.AppUser> _userManager;
+        private readonly IEndpointReadRepository _endpointReadRepository;
+        private readonly RoleManager<AppRole> _roleManager;
 
         public UserService(UserManager<AppUser> userManager,
-            IEndpointReadRepository endpointReadRepository)
+            IEndpointReadRepository endpointReadRepository, RoleManager<AppRole> roleManager)
         {
             _userManager = userManager;
             _endpointReadRepository = endpointReadRepository;
+            _roleManager = roleManager;
         }
 
         public async Task<CreateUserResponse> CreateAsync(CreateUser model)
@@ -34,7 +37,6 @@ namespace StarterKit.Persistence.Services
             }
             IdentityResult result = await _userManager.CreateAsync(new()
             {
-                Id = Guid.NewGuid().ToString(),
                 UserName = model.Username,
                 Email = model.Email,
                 NameSurname = model.NameSurname,
@@ -61,9 +63,9 @@ namespace StarterKit.Persistence.Services
             else
                 throw new NotFoundException();
         }
-        public async Task UpdatePasswordAsync(string userId, string resetToken, string newPassword)
+        public async Task UpdatePasswordAsync(int userId, string resetToken, string newPassword)
         {
-            AppUser user = await _userManager.FindByIdAsync(userId);
+            AppUser user = await _userManager.FindByIdAsync(userId.ToString());
             if (user != null)
             {
                 resetToken = resetToken.UrlDecode();
@@ -75,29 +77,47 @@ namespace StarterKit.Persistence.Services
             }
         }
 
-        public async Task<List<ListUser>> GetAllUsersAsync(int page, int size)
+        public async Task<List<ListUser>> GetAllUsersAsync(int? page, int? size)
         {
-            var users = await _userManager.Users
-                  .Skip(page * size)
-                  .Take(size)
-                  .ToListAsync();
-
-            return users.Select(user => new ListUser
+            var users = _userManager.Users.Where(u => !u.IsDeleted);
+            if (page != null && size != null)
             {
-                Id = user.Id,
-                Email = user.Email,
-                NameSurname = user.NameSurname,
-                TwoFactorEnabled = user.TwoFactorEnabled,
-                UserName = user.UserName
+                users = users.Skip((page.Value - 1) * size.Value).Take(size.Value);
+            }
 
-            }).ToList();
+            var rolesList = await _roleManager.Roles.ToListAsync();
+            var roleByName = rolesList.ToDictionary(r => r.Name, r => r.Id);
+
+            var result = new List<ListUser>();
+
+            foreach (var user in users)
+            {
+                var roleNames = await _userManager.GetRolesAsync(user);
+                var roleDtos = roleNames.Select(rn => new RoleDto
+                {
+                    Id = roleByName.TryGetValue(rn, out var rid) ? rid : 0,
+                    Name = rn
+                }).ToList();
+
+                result.Add(new ListUser
+                {
+                    Id = user.Id,
+                    Email = user.Email,
+                    NameSurname = user.NameSurname,
+                    //TwoFactorEnabled = user.TwoFactorEnabled,
+                    UserName = user.UserName,
+                    Roles = roleDtos
+                });
+            }
+
+            return result;
         }
 
         public int TotalUsersCount => _userManager.Users.Count();
 
-        public async Task AssignRoleToUserAsnyc(string userId, string[] roles)
+        public async Task AssignRoleToUserAsnyc(int userId, string[] roles)
         {
-            AppUser user = await _userManager.FindByIdAsync(userId);
+            AppUser user = await _userManager.Users.FirstOrDefaultAsync(u => u.Id == userId);
 
             if (user is null)
                 throw new NotFoundException("İstifadəçi tapılmadı");
@@ -107,18 +127,33 @@ namespace StarterKit.Persistence.Services
 
             await _userManager.AddToRolesAsync(user, roles);
         }
+
         public async Task<string[]> GetRolesToUserAsync(string userIdOrName)
         {
-            AppUser user = await _userManager.FindByIdAsync(userIdOrName);
+            if (string.IsNullOrWhiteSpace(userIdOrName))
+                throw new ArgumentNullException(nameof(userIdOrName));
+
+            AppUser? user = null;
+
+            // Try numeric id first
+            if (int.TryParse(userIdOrName, out var id))
+            {
+                user = await _userManager.Users.FirstOrDefaultAsync(u => u.Id == id);
+            }
+
+            // Fallback to username lookup
             if (user == null)
+            {
                 user = await _userManager.FindByNameAsync(userIdOrName);
+            }
 
             if (user != null)
             {
                 var userRoles = await _userManager.GetRolesAsync(user);
                 return userRoles.ToArray();
             }
-            return new string[] { };
+
+            throw new NotFoundException("İstifadəçi tapılmadı");
         }
 
         public async Task<bool> HasRolePermissionToEndpointAsync(string name, string code)

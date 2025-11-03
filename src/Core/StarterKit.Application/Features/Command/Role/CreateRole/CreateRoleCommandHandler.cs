@@ -1,9 +1,10 @@
 ﻿using MediatR;
 using StarterKit.Application.Abstractions.Services;
+using StarterKit.Application.Consts;
 
 namespace StarterKit.Application.Features.Commands.Role.CreateRole
 {
-    public class CreateRoleCommandHandler : IRequestHandler<CreateRoleCommandRequest, CreateRoleCommandResponse>
+    public class CreateRoleCommandHandler : IRequestHandler<CreateRoleCommandRequest, ResponseDto>
     {
         readonly IRoleService _roleService;
 
@@ -12,12 +13,12 @@ namespace StarterKit.Application.Features.Commands.Role.CreateRole
             _roleService = roleService;
         }
 
-        public async Task<CreateRoleCommandResponse> Handle(CreateRoleCommandRequest request, CancellationToken cancellationToken)
+        public async Task<ResponseDto> Handle(CreateRoleCommandRequest request, CancellationToken cancellationToken)
         {
             var result = await _roleService.CreateRole(request.Name);
             return new()
             {
-                Succeeded = result
+                Message = "Rol uğurla yaradıldı"
             };
         }
     }

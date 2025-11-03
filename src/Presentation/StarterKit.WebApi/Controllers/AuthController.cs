@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using StarterKit.Application.Features.Command.AppUser.LoginUser;
 using StarterKit.Application.Features.Command.AppUser.PasswordReset;
 using StarterKit.Application.Features.Command.AppUser.RefreshToken;
@@ -9,6 +10,7 @@ namespace StarterKit.WebApi.Controllers
     public class AuthController : BaseApiController
     {
         [HttpPost("login")]
+        [AllowAnonymous]
         public async Task<IActionResult> Login(LoginUserCommandRequest request)
         {
             var response = await Mediator.Send(request);
@@ -16,6 +18,7 @@ namespace StarterKit.WebApi.Controllers
         }
 
         [HttpPost("refresh-token")]
+        [AllowAnonymous]
         public async Task<IActionResult> RefreshTokenLogin([FromBody] RefreshTokenLoginCommandRequest request)
         {
             var response = await Mediator.Send(request);
@@ -24,6 +27,7 @@ namespace StarterKit.WebApi.Controllers
 
         
         [HttpPost("reset-password")]
+        [AllowAnonymous]
         public async Task<IActionResult> PasswordReset([FromBody] PasswordResetCommandRequest passwordResetCommandRequest)
         {
             var response = await Mediator.Send(passwordResetCommandRequest);
@@ -31,6 +35,7 @@ namespace StarterKit.WebApi.Controllers
         }
         
         [HttpPost("verify-reset-token")]
+        [AllowAnonymous]
         public async Task<IActionResult> VerifyResetToken([FromBody] VerifyResetTokenCommandRequest request)
         {
             var response = await Mediator.Send(request);
