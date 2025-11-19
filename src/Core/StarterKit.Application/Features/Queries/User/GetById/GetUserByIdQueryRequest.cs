@@ -3,7 +3,7 @@ using StarterKit.Application.DTOs.User;
 
 namespace StarterKit.Application.Features.Queries.User.GetById
 {
-    public class GetUserByIdQueryRequest : IRequest<ListUser>
+    public class GetUserByIdQueryRequest : IRequest<UserDto>
     {
         public int Id { get; set; }
 

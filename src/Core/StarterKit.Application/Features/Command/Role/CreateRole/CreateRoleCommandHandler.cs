@@ -18,7 +18,7 @@ namespace StarterKit.Application.Features.Commands.Role.CreateRole
             var result = await _roleService.CreateRole(request.Name);
             return new()
             {
-                Message = "Rol uğurla yaradıldı"
+                Message = "Rol əlavə olundu"
             };
         }
     }

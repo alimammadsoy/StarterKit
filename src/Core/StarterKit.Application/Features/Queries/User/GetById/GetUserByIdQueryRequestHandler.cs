@@ -9,7 +9,7 @@ using StarterKit.Domain.Entities.Identity;
 
 namespace StarterKit.Application.Features.Queries.User.GetUserById
 {
-    public class GetUserByIdQueryRequestHandler : IRequestHandler<GetUserByIdQueryRequest, ListUser>
+    public class GetUserByIdQueryRequestHandler : IRequestHandler<GetUserByIdQueryRequest, UserDto>
     {
         private readonly UserManager<AppUser> _userManager;
         private readonly RoleManager<AppRole> _roleManager;
@@ -20,7 +20,7 @@ namespace StarterKit.Application.Features.Queries.User.GetUserById
             _roleManager = roleManager;
         }
 
-        public async Task<ListUser> Handle(GetUserByIdQueryRequest request, CancellationToken cancellationToken)
+        public async Task<UserDto> Handle(GetUserByIdQueryRequest request, CancellationToken cancellationToken)
         {
             var user = await _userManager.Users.FirstOrDefaultAsync(u => u.Id == request.Id && !u.IsDeleted, cancellationToken);
             if (user == null)
@@ -42,12 +42,13 @@ namespace StarterKit.Application.Features.Queries.User.GetUserById
                 }).ToList();
             }
 
-            return new ListUser
+            return new()
             {
                 Id = user.Id,
                 Email = user.Email,
-                NameSurname = user.NameSurname,
-                UserName = user.UserName,
+                Name = user.Name,
+                Surname = user.Surname,
+                Phone = user.PhoneNumber,
                 Roles = roleDtos
             };
         }

@@ -9,13 +9,15 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using StarterKit.Application;
+using StarterKit.Application.Abstractions.Services;
 using StarterKit.Infrastructure;
+using StarterKit.Infrastructure.Services;
 using StarterKit.Persistence;
 using StarterKit.Persistence.Contexts;
 using StarterKit.WebApi.Configurations;
+using StarterKit.WebApi.Filters;
 using StarterKit.WebApi.Middlewares;
 using Swashbuckle.AspNetCore.SwaggerUI;
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
@@ -40,10 +42,13 @@ builder.Services.AddPersistenceServices(builder.Configuration);
 builder.Services.AddInfrastructureServices();
 builder.Services.AddApplicationServices();
 
+builder.Services.AddSingleton<ILocalizationService, LocalizationService>();
+builder.Services.AddScoped<LocalizeResponseFilter>();
 
 builder.Services.AddControllers(opt =>
 {
     opt.Conventions.Add(new RouteTokenTransformerConvention(new KebabCaseParameterTransformer()));
+    opt.Filters.Add<LocalizeResponseFilter>();
 })
 .AddJsonOptions(options =>
 {

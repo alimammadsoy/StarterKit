@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using StarterKit.Application.Abstractions.Services;
 using StarterKit.Application.Exceptions;
 using System.Net;
 using System.Text.Json;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Model;
 
 namespace StarterKit.WebApi.Middlewares
 {
@@ -9,10 +11,14 @@ namespace StarterKit.WebApi.Middlewares
     {
         private readonly RequestDelegate _next;
         private readonly ILogger<ExceptionHandlingMiddleware> _logger;
-        public ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
+        private readonly ILocalizationService _localizationService;
+
+        public ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger,
+            ILocalizationService localizationService)
         {
             _next = next;
             _logger = logger;
+            _localizationService = localizationService;
         }
 
         public async Task InvokeAsync(HttpContext context)
@@ -34,6 +40,10 @@ namespace StarterKit.WebApi.Middlewares
             var response = context.Response;
             var problemDetails = new ProblemDetails();
 
+            // Accept-Language header
+            string lang = context.Request.Headers["Accept-Language"].ToString().ToLower();
+            if (string.IsNullOrEmpty(lang) || !(lang == "az" || lang == "en" || lang == "ru"))
+                lang = "az";
 
             switch (ex)
             {
@@ -63,6 +73,11 @@ namespace StarterKit.WebApi.Middlewares
                     problemDetails.Detail = exc.Message;
                     problemDetails.Title = "Already Activated";
                     break;
+                case UserAlreadyExistedException exc:
+                    response.StatusCode = (int)HttpStatusCode.UnprocessableEntity;
+                    problemDetails.Detail = exc.Message;
+                    problemDetails.Title = "User Already Existed";
+                    break;
                 case ExtensionException exc:
                     response.StatusCode = (int)HttpStatusCode.BadRequest;
                     problemDetails.Detail = exc.Message;
@@ -74,9 +89,21 @@ namespace StarterKit.WebApi.Middlewares
                     problemDetails.Title = "Bad Request Error";
                     break;
                 case ValidationException exc:
-                    response.StatusCode = (int)HttpStatusCode.BadRequest;
-                    problemDetails = new ValidationProblemDetails(exc.Errors);
-                    problemDetails.Extensions.Add("errors", exc.Errors);
+                    response.StatusCode = (int)HttpStatusCode.UnprocessableContent;
+
+                    var localizedErrors = new Dictionary<string, string[]>();
+                    foreach (var error in exc.Errors)
+                    {
+                        localizedErrors[error.Key] = error.Value
+                            .Select(msgKey => _localizationService.GetMessage(msgKey, lang))
+                            .ToArray();
+                    }
+
+                    problemDetails = new ValidationProblemDetails(localizedErrors)
+                    {
+                        Title = _localizationService.GetMessage("ValidationError", lang)
+                    };
+                    problemDetails.Extensions.Add("errors", localizedErrors);
                     problemDetails.Title = "Validation error";
                     break;
                 case ForbiddenException exc:
@@ -101,8 +128,28 @@ namespace StarterKit.WebApi.Middlewares
             var extensionErrors = string.Join(", ", problemDetails.Extensions.Select(e => $"{e.Key}: {JsonSerializer.Serialize(e.Value)}"));
             _logger.LogError($"Exception caught: {problemDetails.Title}, Status Code: {response.StatusCode}, Details: {problemDetails.Detail}, Extensions: {extensionErrors}");
 
-            var result = JsonSerializer.Serialize(problemDetails);
+
+            // Tərcümə edilmiş mesaj
+            if (!(ex is ValidationException))
+                problemDetails.Detail = _localizationService.GetMessage(problemDetails.Detail, lang);
+
+            // Build final unified JSON response for FE
+            var responseBody = new Dictionary<string, object?>
+            {
+                { "status", response.StatusCode },
+                { "title", problemDetails.Title },
+                { "message", problemDetails.Detail }
+            };
+
+            if (problemDetails is ValidationProblemDetails vpd)
+                responseBody.Add("errors", vpd.Errors);
+
+            var result = JsonSerializer.Serialize(responseBody);
             await context.Response.WriteAsync(result);
+
+
+            //var result = JsonSerializer.Serialize(problemDetails);
+            //await context.Response.WriteAsync(result);
         }
     }
 }

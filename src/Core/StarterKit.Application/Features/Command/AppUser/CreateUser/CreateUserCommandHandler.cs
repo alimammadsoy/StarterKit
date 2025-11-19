@@ -25,15 +25,17 @@ namespace StarterKit.Application.Features.Command.AppUser.CreateUser
             var createResponse = await _userService.CreateAsync(new()
             {
                 Email = request.Email,
-                NameSurname = request.NameSurname,
+                Name = request.Name,
+                Surname = request.Surname,
+                PhoneNumber = request.Phone,
                 Password = request.Password,
-                PasswordConfirm = request.PasswordConfirm,
-                Username = request.Username,
+                PasswordConfirm = request.PasswordConfirmation,
+                Username = request.Email,
             });
 
             if (createResponse?.Succeeded == true && request.RoleIds != null && request.RoleIds.Length > 0)
             {
-                var user = await _userManager.FindByNameAsync(request.Username);
+                var user = await _userManager.FindByEmailAsync(request.Email);
                 if (user != null)
                 {
                     var roleNames = await _roleManager.Roles

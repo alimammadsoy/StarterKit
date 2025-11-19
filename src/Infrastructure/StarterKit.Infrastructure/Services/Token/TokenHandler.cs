@@ -62,7 +62,7 @@ namespace StarterKit.Infrastructure.Services.Token
 
             //Token oluşturucu sınıfından bir örnek alalım.
             JwtSecurityTokenHandler tokenHandler = new();
-            token.AccessToken = tokenHandler.WriteToken(securityToken);
+            token.Token = tokenHandler.WriteToken(securityToken);
 
             //string refreshToken = CreateRefreshToken();
 

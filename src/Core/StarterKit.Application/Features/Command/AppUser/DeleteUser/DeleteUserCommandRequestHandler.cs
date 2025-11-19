@@ -29,7 +29,7 @@ namespace StarterKit.Application.Features.Command.AppUser.DeleteUser
                 return new ResponseDto { Message = $"İstifadəçi silinərkən xəta: {errors}" };
             }
 
-            return new ResponseDto { Message = "İstifadəçi uğurla silindi" };
+            return new ResponseDto { Message = "İstifadəçi silindi" };
         }
     }
 }

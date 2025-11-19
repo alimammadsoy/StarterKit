@@ -13,6 +13,7 @@ namespace StarterKit.Persistence.Contexts
        
         public DbSet<Menu> Menus { get; set; }
         public DbSet<Endpoint> Endpoints { get; set; }
+        public DbSet<TemporaryUser> TemporaryUsers { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

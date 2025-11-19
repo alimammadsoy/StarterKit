@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using StarterKit.Application.Abstractions.Services;
+using StarterKit.Application.Consts;
 using StarterKit.Application.DTOs.Role;
 using StarterKit.Application.DTOs.User;
 using StarterKit.Application.Exceptions;
@@ -39,7 +40,8 @@ namespace StarterKit.Persistence.Services
             {
                 UserName = model.Username,
                 Email = model.Email,
-                NameSurname = model.NameSurname,
+                Name = model.Name,
+                Surname = model.Surname
             }, model.Password);
 
             CreateUserResponse response = new() { Succeeded = result.Succeeded };
@@ -77,9 +79,10 @@ namespace StarterKit.Persistence.Services
             }
         }
 
-        public async Task<List<ListUser>> GetAllUsersAsync(int? page, int? size)
+        public IQueryable<AppUser> GetAllUsersAsync()
         {
-            var users = _userManager.Users.Where(u => !u.IsDeleted);
+            return _userManager.Users.Where(u => !u.IsDeleted);
+            /*var users = _userManager.Users.Where(u => !u.IsDeleted);
             if (page != null && size != null)
             {
                 users = users.Skip((page.Value - 1) * size.Value).Take(size.Value);
@@ -103,21 +106,23 @@ namespace StarterKit.Persistence.Services
                 {
                     Id = user.Id,
                     Email = user.Email,
-                    NameSurname = user.NameSurname,
+                    Name = user.Name,
+                    Surname = user.Surname,
+                    Phone = user.PhoneNumber,
                     //TwoFactorEnabled = user.TwoFactorEnabled,
-                    UserName = user.UserName,
+                    //UserName = user.UserName,
                     Roles = roleDtos
                 });
             }
 
-            return result;
+            return result;*/
         }
 
         public int TotalUsersCount => _userManager.Users.Count();
 
         public async Task AssignRoleToUserAsnyc(int userId, string[] roles)
         {
-            AppUser user = await _userManager.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            AppUser user = await _userManager.Users.FirstOrDefaultAsync(u => u.Id == userId && !u.IsDeleted);
 
             if (user is null)
                 throw new NotFoundException("İstifadəçi tapılmadı");

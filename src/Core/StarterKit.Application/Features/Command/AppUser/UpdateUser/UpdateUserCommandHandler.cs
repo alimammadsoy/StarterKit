@@ -1,7 +1,4 @@
-﻿using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using StarterKit.Application.Abstractions.Services;
@@ -32,17 +29,23 @@ namespace StarterKit.Application.Features.Command.AppUser.UpdateUser
             if (user == null)
                 throw new NotFoundException("İstifadəçi tapılmadı");
 
-            if (!string.IsNullOrWhiteSpace(request.NameSurname))
-                user.NameSurname = request.NameSurname;
+            if (!string.IsNullOrWhiteSpace(request.Name))
+                user.Name = request.Name;
 
-            if (!string.IsNullOrWhiteSpace(request.Username) && user.UserName != request.Username)
+            if (!string.IsNullOrWhiteSpace(request.Surname))
+                user.Name = request.Surname;
+
+            if (!string.IsNullOrWhiteSpace(request.PhoneNumber) && user.PhoneNumber != request.PhoneNumber)
             {
-                user.UserName = request.Username;
-                user.NormalizedUserName = request.Username.ToUpperInvariant();
+                user.PhoneNumber = request.PhoneNumber;
             }
 
             if (!string.IsNullOrWhiteSpace(request.Email) && user.Email != request.Email)
             {
+                var existingUser = await _userManager.FindByEmailAsync(request.Email);
+                if (existingUser != null && existingUser.Id != user.Id)
+                    throw new UserAlreadyExistedException("Bu email artıq başqa istifadəçi tərəfindən istifadə olunur.");
+
                 user.Email = request.Email;
                 user.NormalizedEmail = request.Email.ToUpperInvariant();
             }
@@ -64,7 +67,7 @@ namespace StarterKit.Application.Features.Command.AppUser.UpdateUser
                 await _userService.AssignRoleToUserAsnyc(request.Id, roleNames.ToArray());
             }
 
-            return new ResponseDto { Message = "İstifadəçi uğurla redaktə edildi" };
+            return new ResponseDto { Message = "İstifadəçi məlumatları yeniləndi" };
         }
     }
 }

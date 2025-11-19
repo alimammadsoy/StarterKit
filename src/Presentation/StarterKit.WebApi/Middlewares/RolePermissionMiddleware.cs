@@ -95,19 +95,22 @@ namespace StarterKit.WebApi.Middlewares
                 // Fallback: use AuthorizeDefinitionAttribute on method (or controller)
                 var authDef = cad.MethodInfo.GetCustomAttributes(true).OfType<AuthorizeDefinitionAttribute>().FirstOrDefault()
                               ?? cad.ControllerTypeInfo.GetCustomAttributes(true).OfType<AuthorizeDefinitionAttribute>().FirstOrDefault();
-
-                if (authDef != null)
+                
+                if (authDef == null)
                 {
-                    var httpMethod = context.Request.Method.ToUpperInvariant();
-                    var actionType = authDef.ActionType.ToString();
-                    var definition = string.IsNullOrWhiteSpace(authDef.Definition) ? cad.ActionName : authDef.Definition;
-                    var code = $"{httpMethod}.{actionType}.{NormalizeDefinition(definition)}";
-                    var menu = authDef.Menu;
-
-                    var roles = await authorizationEndpointService.GetRolesToEndpointAsync(code, menu);
-                    if (roles != null)
-                        allowedRoles = roles.ToArray();
+                    await _next(context);
+                    return;
                 }
+
+                var httpMethod = context.Request.Method.ToUpperInvariant();
+                var actionType = authDef.ActionType.ToString();
+                var definition = string.IsNullOrWhiteSpace(authDef.Definition) ? cad.ActionName : authDef.Definition;
+                var code = $"{httpMethod}.{actionType}.{NormalizeDefinition(definition)}";
+                var menu = authDef.Menu;
+
+                var roles = await authorizationEndpointService.GetRolesToEndpointAsync(code, menu);
+                if (roles != null)
+                    allowedRoles = roles.ToArray();
             }
 
             // If no roles configured -> deny (403). Change policy if you prefer default allow.

@@ -5,7 +5,7 @@ using StarterKit.Application.Features.Command.AuthorizationEndpoint.AssignRoleEn
 using StarterKit.Application.Features.Queries.AuthorizationEndpoint.GetRolesToEndpoint;
 
 namespace StarterKit.WebApi.Controllers
-{
+{/*
     public class AuthorizationEndpointsController : BaseApiController
     {
         [HttpPost("get-roles-to-endpoint")]
@@ -32,5 +32,5 @@ namespace StarterKit.WebApi.Controllers
             var response = await Mediator.Send(request);
             return Ok(response);
         }
-    }
+    }*/
 }

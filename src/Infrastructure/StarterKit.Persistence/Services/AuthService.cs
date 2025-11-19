@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using StarterKit.Application.Abstractions.Services;
@@ -7,6 +8,7 @@ using StarterKit.Application.DTOs.Auth;
 using StarterKit.Application.Exceptions;
 using StarterKit.Application.Helpers;
 using StarterKit.Domain.Entities.Identity;
+using System.Text;
 
 namespace StarterKit.Persistence.Services
 {
@@ -35,7 +37,7 @@ namespace StarterKit.Persistence.Services
             _userService = userService;
             _mailService = mailService;
         }
-        async Task<JwtTokenDto> CreateUserExternalAsync(AppUser user, string email, string name, UserLoginInfo info, int accessTokenLifeTime)
+        async Task<JwtTokenDto> CreateUserExternalAsync(AppUser user, string email, string name, string surname, UserLoginInfo info, int accessTokenLifeTime)
         {
             bool result = user != null;
             if (user == null)
@@ -47,7 +49,8 @@ namespace StarterKit.Persistence.Services
                     {
                         Email = email,
                         UserName = email,
-                        NameSurname = name
+                        Name = name,
+                        Surname = surname,
                     };
                     var identityResult = await _userManager.CreateAsync(user);
                     result = identityResult.Succeeded;
@@ -144,8 +147,8 @@ namespace StarterKit.Persistence.Services
             {
                 string resetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
 
-                //byte[] tokenBytes = Encoding.UTF8.GetBytes(resetToken);
-                //resetToken = WebEncoders.Base64UrlEncode(tokenBytes);
+                byte[] tokenBytes = Encoding.UTF8.GetBytes(resetToken);
+                resetToken = WebEncoders.Base64UrlEncode(tokenBytes);
                 resetToken = resetToken.UrlEncode();
 
                 await _mailService.SendPasswordResetMailAsync(email, user.Id, resetToken);

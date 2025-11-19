@@ -7,7 +7,14 @@ namespace StarterKit.Application.Profiles
     {
         public UserProfile()
         {
-            //CreateMap<Domain.Entities.Identity.AppUser, ListUser>();
+            CreateMap<Domain.Entities.Identity.AppUser, ListUser>()
+                .ForMember(dest => dest.Phone,
+                          opt => opt.MapFrom(src => src.PhoneNumber));
+
+
+            CreateMap<Domain.Entities.Identity.AppUser, UserDto>()
+                .ForMember(dest => dest.Phone,
+                          opt => opt.MapFrom(src => src.PhoneNumber));
         }
     }
 }

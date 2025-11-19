@@ -1,4 +1,6 @@
-﻿namespace StarterKit.Application.Abstractions.Services
+﻿using System.Text;
+
+namespace StarterKit.Application.Abstractions.Services
 {
     public interface IMailService
     {
@@ -6,6 +8,7 @@
         Task SendMailAsync(string[] tos, string subject, string body, bool isBodyHtml = true);
 
         Task SendPasswordResetMailAsync(string to, int userId, string resetToken);
+
         Task SendCompletedOrderMailAsync(string to, string orderCode, DateTime orderDate, string userName);
     }
 }
