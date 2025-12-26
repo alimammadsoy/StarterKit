@@ -1,9 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http.Json;
+using Microsoft.AspNetCore.Mvc;
 using StarterKit.Application.Abstractions.Services;
 using StarterKit.Application.Exceptions;
+using StarterKit.WebApi.Configurations;
 using System.Net;
 using System.Text.Json;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Model;
 
 namespace StarterKit.WebApi.Middlewares
 {
@@ -12,6 +13,7 @@ namespace StarterKit.WebApi.Middlewares
         private readonly RequestDelegate _next;
         private readonly ILogger<ExceptionHandlingMiddleware> _logger;
         private readonly ILocalizationService _localizationService;
+        private readonly JsonSerializerOptions _jsonOptions;
 
         public ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger,
             ILocalizationService localizationService)
@@ -19,6 +21,13 @@ namespace StarterKit.WebApi.Middlewares
             _next = next;
             _logger = logger;
             _localizationService = localizationService;
+
+            // Initialize JsonSerializerOptions with your custom converter
+            _jsonOptions = new JsonSerializerOptions
+            {
+                Converters = { new AzerbaijanDateTimeConverter() },
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            };
         }
 
         public async Task InvokeAsync(HttpContext context)
@@ -111,6 +120,14 @@ namespace StarterKit.WebApi.Middlewares
                     problemDetails.Detail = exc.Message;
                     problemDetails.Title = "Forbidden";
                     break;
+
+                case CustomHttpException exc:
+                    response.StatusCode = exc.StatusCode;
+                    problemDetails.Title = "CustomError";
+                    //problemDetails.Detail = "";
+                    problemDetails.Extensions["custom"] = exc.ErrorObject;
+                    break;
+
                 case LockedException exc:
                     response.StatusCode = (int)HttpStatusCode.Locked;
                     problemDetails.Detail = exc.Message;
@@ -128,6 +145,33 @@ namespace StarterKit.WebApi.Middlewares
             var extensionErrors = string.Join(", ", problemDetails.Extensions.Select(e => $"{e.Key}: {JsonSerializer.Serialize(e.Value)}"));
             _logger.LogError($"Exception caught: {problemDetails.Title}, Status Code: {response.StatusCode}, Details: {problemDetails.Detail}, Extensions: {extensionErrors}");
 
+            if (ex is CustomHttpException customEx)
+            {
+                // Extract the error object and translate the message if present
+                var errorObj = customEx.ErrorObject;
+
+                // Use reflection or dynamic to get properties from the anonymous object
+                var errorDict = new Dictionary<string, object?>();
+
+                foreach (var prop in errorObj.GetType().GetProperties())
+                {
+                    var value = prop.GetValue(errorObj);
+
+                    // If the property is "message" and value is string, translate it
+                    if (prop.Name == "message" && value is string messageKey)
+                    {
+                        errorDict[prop.Name] = _localizationService.GetMessage(messageKey, lang);
+                    }
+                    else
+                    {
+                        errorDict[prop.Name] = value;
+                    }
+                }
+
+                var result = JsonSerializer.Serialize(errorDict, _jsonOptions);
+                await context.Response.WriteAsync(result);
+                return;
+            }
 
             // Tərcümə edilmiş mesaj
             if (!(ex is ValidationException))
@@ -144,9 +188,8 @@ namespace StarterKit.WebApi.Middlewares
             if (problemDetails is ValidationProblemDetails vpd)
                 responseBody.Add("errors", vpd.Errors);
 
-            var result = JsonSerializer.Serialize(responseBody);
-            await context.Response.WriteAsync(result);
-
+            var standardResult = JsonSerializer.Serialize(responseBody, _jsonOptions);
+            await context.Response.WriteAsync(standardResult);
 
             //var result = JsonSerializer.Serialize(problemDetails);
             //await context.Response.WriteAsync(result);

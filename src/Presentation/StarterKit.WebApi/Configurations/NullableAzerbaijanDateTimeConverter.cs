@@ -13,7 +13,7 @@ namespace StarterKit.WebApi.Configurations
                 : "Asia/Baku"
         );
 
-        private static readonly string[] Formats = { "dd.MM.yyyy HH:mm", "dd.MM.yyyy" };
+        private static readonly string[] Formats = { "dd.MM.yyyy HH:mm:ss", "dd.MM.yyyy" };
 
         public override DateTime? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
@@ -35,7 +35,7 @@ namespace StarterKit.WebApi.Configurations
             if (value.HasValue)
             {
                 var azTime = TimeZoneInfo.ConvertTimeFromUtc(value.Value, AzTimeZone);
-                writer.WriteStringValue(azTime.ToString("dd.MM.yyyy HH:mm"));
+                writer.WriteStringValue(azTime.ToString("dd.MM.yyyy HH:mm:ss"));
             }
             else
             {

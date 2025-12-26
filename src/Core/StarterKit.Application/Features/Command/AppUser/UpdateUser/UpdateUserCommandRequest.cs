@@ -8,7 +8,7 @@ namespace StarterKit.Application.Features.Command.AppUser.UpdateUser
         public int Id { get; set; }
         public string Name { get; set; }
         public string Surname { get; set; }
-        public string PhoneNumber { get; set; }
+        public string Phone { get; set; }
         public string Email { get; set; }
         public int[] RoleIds { get; set; }
     }

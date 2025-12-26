@@ -21,7 +21,7 @@ namespace StarterKit.Application.Features.Command.AppUser.LoginUser
             var expireAt = Convert.ToInt32(_configuration["JWT:ExpireAt"]);
             var token = await _authService.LoginAsync(request.Email, request.Password, expireAt);
 
-            return new() { Token = token.Token, RefreshToken = token.RefreshToken, Expiration = token.Expiration };
+            return new() { AccessToken = token.AccessToken, RefreshToken = token.RefreshToken, ExpiresAt = token.ExpiresAt };
         }
     }
 }

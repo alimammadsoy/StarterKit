@@ -23,14 +23,13 @@ namespace StarterKit.Infrastructure.Services.Token
 
         public async Task<Application.DTOs.Auth.JwtTokenDto> CreateAccessToken(int second, AppUser user)
         {
-
             var jwtSettings = _configuration.GetSection("JWT");
             Application.DTOs.Auth.JwtTokenDto token = new();
 
             SymmetricSecurityKey securityKey = new(Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]));
             SigningCredentials signingCredentials = new(securityKey, SecurityAlgorithms.HmacSha256);
 
-            token.Expiration = DateTime.UtcNow.AddSeconds(second);
+            token.ExpiresAt = DateTime.UtcNow.AddSeconds(second);
 
             var claims = new List<Claim>
             {
@@ -54,7 +53,7 @@ namespace StarterKit.Infrastructure.Services.Token
             JwtSecurityToken securityToken = new(
                 audience: jwtSettings["Audience"],
                 issuer: jwtSettings["Issuer"],
-                expires: token.Expiration,
+                expires: token.ExpiresAt,
                 notBefore: DateTime.UtcNow,
                 signingCredentials: signingCredentials,
                 claims: claims
@@ -62,19 +61,20 @@ namespace StarterKit.Infrastructure.Services.Token
 
             //Token oluşturucu sınıfından bir örnek alalım.
             JwtSecurityTokenHandler tokenHandler = new();
-            token.Token = tokenHandler.WriteToken(securityToken);
-
-            //string refreshToken = CreateRefreshToken();
-
-            token.RefreshToken = CreateRefreshToken();
+            token.AccessToken = tokenHandler.WriteToken(securityToken);
+            token.RefreshToken = GenerateRandomNumber();
             return token;
         }
 
-        public string CreateRefreshToken()
+        public string GenerateRandomNumber()
         {
             byte[] number = new byte[32];
             using RandomNumberGenerator random = RandomNumberGenerator.Create();
             random.GetBytes(number);
+
+            using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(_configuration["JWT:SecretKey"]));
+            var hash = hmac.ComputeHash(number);
+
             return Convert.ToBase64String(number);
         }
     }

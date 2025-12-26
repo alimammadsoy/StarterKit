@@ -15,7 +15,7 @@ namespace StarterKit.WebApi.Controllers
     {
 
         [HttpGet]
-        [AuthorizeDefinition(ActionType = ActionType.Reading, Definition = "Get Roles", Menu = "Roles")]
+        [AuthorizeDefinition(ActionType = ActionType.Reading, Definition = "roles.views", Menu = "Roles")]
         public async Task<IActionResult> GetRoles([FromQuery] GetRolesQueryRequest request)
         {
             var response = await Mediator.Send(request);
@@ -23,7 +23,7 @@ namespace StarterKit.WebApi.Controllers
         }
 
         [HttpGet("{Id}")]
-        [AuthorizeDefinition(ActionType = ActionType.Reading, Definition = "Get Role By Id", Menu = "Roles")]
+        [AuthorizeDefinition(ActionType = ActionType.Reading, Definition = "roles.view", Menu = "Roles")]
         public async Task<IActionResult> GetRoleById([FromRoute] GetRoleByIdQueryRequest request)
         {
             var response = await Mediator.Send(request);
@@ -31,15 +31,16 @@ namespace StarterKit.WebApi.Controllers
         }
 
         [HttpPost()]
-        [AuthorizeDefinition(ActionType = ActionType.Writing, Definition = "Create Role", Menu = "Roles")]
+        [AuthorizeDefinition(ActionType = ActionType.Writing, Definition = "roles.create", Menu = "Roles")]
         public async Task<IActionResult> CreateRole([FromBody] CreateRoleCommandRequest request)
         {
             var response = await Mediator.Send(request);
-            return Ok(response);
+            return StatusCode(StatusCodes.Status201Created, response);
+            //return Ok(response);
         }
 
         [HttpPut("{id}")]
-        [AuthorizeDefinition(ActionType = ActionType.Updating, Definition = "Update Role", Menu = "Roles")]
+        [AuthorizeDefinition(ActionType = ActionType.Updating, Definition = "roles.update", Menu = "Roles")]
         public async Task<IActionResult> UpdateRole([FromRoute] int id, [FromBody] UpdateRoleCommandRequest request)
         {
             request.Id = id;
@@ -48,7 +49,7 @@ namespace StarterKit.WebApi.Controllers
         }
 
         [HttpDelete("{Id}")]
-        [AuthorizeDefinition(ActionType = ActionType.Deleting, Definition = "Delete Role", Menu = "Roles")]
+        [AuthorizeDefinition(ActionType = ActionType.Deleting, Definition = "roles.delete", Menu = "Roles")]
         public async Task<IActionResult> DeleteRole([FromRoute] DeleteRoleCommandRequest request)
         {
             var response = await Mediator.Send(request);

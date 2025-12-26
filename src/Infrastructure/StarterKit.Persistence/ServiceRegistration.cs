@@ -5,9 +5,11 @@ using Microsoft.Extensions.DependencyInjection;
 using StarterKit.Application.Abstractions.Services;
 using StarterKit.Application.Abstractions.Services.Authentications;
 using StarterKit.Application.Repositories;
+using StarterKit.Application.Repositories.User;
 using StarterKit.Domain.Entities.Identity;
 using StarterKit.Persistence.Contexts;
 using StarterKit.Persistence.Repositories;
+using StarterKit.Persistence.Repositories.User;
 using StarterKit.Persistence.Services;
 namespace StarterKit.Persistence
 {
@@ -30,6 +32,7 @@ namespace StarterKit.Persistence
                 options.Password.RequireDigit = false;
                 options.Password.RequireLowercase = false;
                 options.Password.RequireUppercase = false;
+                options.User.RequireUniqueEmail = false;
             }).AddEntityFrameworkStores<ApplicationDbContext>()
             .AddDefaultTokenProviders();
 
@@ -64,6 +67,8 @@ namespace StarterKit.Persistence
             services.AddScoped<IInternalAuthentication, AuthService>();
             services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<IAuthorizationEndpointService, AuthorizationEndpointService>();
+            services.AddScoped<IUserReadRepository, UserReadRepository>();
+            //services.AddScoped<IUserStore<AppUser>, CustomUserStore>();
         }
     }
 }

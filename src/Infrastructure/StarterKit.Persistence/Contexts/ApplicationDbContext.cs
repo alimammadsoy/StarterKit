@@ -14,6 +14,8 @@ namespace StarterKit.Persistence.Contexts
         public DbSet<Menu> Menus { get; set; }
         public DbSet<Endpoint> Endpoints { get; set; }
         public DbSet<TemporaryUser> TemporaryUsers { get; set; }
+        public DbSet<UserRefreshToken> UserRefreshTokens { get; set; }
+        public DbSet<PasswordReset> PasswordResets { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

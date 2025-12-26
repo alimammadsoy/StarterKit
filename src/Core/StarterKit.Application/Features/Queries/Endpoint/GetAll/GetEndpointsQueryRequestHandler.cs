@@ -27,6 +27,9 @@ namespace StarterKit.Application.Features.Queries.Endpoint.GetAll
             if (!await endpoints.AnyAsync(cancellationToken))
                 throw new NotFoundException("İcazə tapılmadı");
 
+
+            endpoints = endpoints.ApplySortingAndFiltering(request.ColumnName, request.OrderBy, request.Search);
+
             int totalCount = await endpoints.CountAsync();
 
             int totalPage = request.PageSize != null

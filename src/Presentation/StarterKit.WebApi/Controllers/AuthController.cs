@@ -1,23 +1,25 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using StarterKit.Application.CustomAttributes;
-using StarterKit.Application.Enums;
+using StarterKit.Application.Features.Command.AppUser.ForgotPassword;
 using StarterKit.Application.Features.Command.AppUser.LoginUser;
+using StarterKit.Application.Features.Command.AppUser.LogoutUser;
 using StarterKit.Application.Features.Command.AppUser.PasswordReset;
 using StarterKit.Application.Features.Command.AppUser.RefreshToken;
 using StarterKit.Application.Features.Command.AppUser.RegisterUser;
+using StarterKit.Application.Features.Command.AppUser.ResendResetCode;
 using StarterKit.Application.Features.Command.AppUser.ResendVerificationCode;
+using StarterKit.Application.Features.Command.AppUser.ResetPassword;
 using StarterKit.Application.Features.Command.AppUser.VerifyEmail;
-using StarterKit.Application.Features.Command.AppUser.VerifyResetToken;
+using StarterKit.Application.Features.Command.AppUser.VerifyResetCode;
 using StarterKit.Application.Features.Queries.Auth;
 using StarterKit.WebApi.Attributes;
 
 namespace StarterKit.WebApi.Controllers
 {
+    [AllowAnonymous]
     public class AuthController : BaseApiController
     {
         [HttpPost("login")]
-        [AllowAnonymous]
         public async Task<IActionResult> Login(LoginUserCommandRequest request)
         {
             var response = await Mediator.Send(request);
@@ -25,25 +27,24 @@ namespace StarterKit.WebApi.Controllers
         }
 
         [HttpPost("register")]
-        [AllowAnonymous]
         [LocalizeResponse]
         public async Task<IActionResult> Register(RegisterUserCommandRequest request)
         {
             var response = await Mediator.Send(request);
-            return Ok(response);
+            return StatusCode(StatusCodes.Status201Created, response);
+            //return Ok(response);
         }
 
         [HttpPost("verify-email")]
-        [AllowAnonymous]
         [LocalizeResponse]
         public async Task<IActionResult> VerifyEmail(VerifyEmailCommandRequest request)
         {
             var response = await Mediator.Send(request);
-            return Ok(response);
+            return StatusCode(StatusCodes.Status201Created, response);
+            //return Ok(response);
         }
 
         [HttpPost("resend-verification-code")]
-        [AllowAnonymous]
         [LocalizeResponse]
         public async Task<IActionResult> ResendVerificationCode(ResendVerificationCodeCommandRequest request)
         {
@@ -59,21 +60,53 @@ namespace StarterKit.WebApi.Controllers
             return Ok(response);
         }
 
-        /*[HttpPost("refresh-token")]
-        [AllowAnonymous]
+        [HttpPost("refresh-token")]
         public async Task<IActionResult> RefreshTokenLogin([FromBody] RefreshTokenLoginCommandRequest request)
         {
             var response = await Mediator.Send(request);
             return Ok(response);
-        }*/
+        }
 
-        /*[HttpPost("reset-password")]
-        [AllowAnonymous]
-        public async Task<IActionResult> PasswordReset([FromBody] PasswordResetCommandRequest passwordResetCommandRequest)
+        [Authorize]
+        [HttpPost("logout")]
+        [LocalizeResponse]
+        public async Task<IActionResult> Logout([FromBody] LogoutCommandRequest request)
         {
-            var response = await Mediator.Send(passwordResetCommandRequest);
+            var response = await Mediator.Send(request);
             return Ok(response);
-        }*/
+        }
+
+        [HttpPost("forgot-password")]
+        [LocalizeResponse]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordCommandRequest request)
+        {
+            var response = await Mediator.Send(request);
+            return Ok(response);
+        }
+
+        [HttpPost("verify-reset-code")]
+        [LocalizeResponse]
+        public async Task<IActionResult> VerifyResetCode(VerifyResetCodeCommandRequest request)
+        {
+            var response = await Mediator.Send(request);
+            return Ok(response);
+        }
+
+        [HttpPost("resend-reset-code")]
+        [LocalizeResponse]
+        public async Task<IActionResult> ResendResetCode(ResendResetCodeCommandRequest request)
+        {
+            var response = await Mediator.Send(request);
+            return Ok(response);
+        }
+
+        [HttpPost("reset-password")]
+        [LocalizeResponse]
+        public async Task<IActionResult> PasswordReset([FromBody] ResetPasswordCommandRequest request)
+        {
+            var response = await Mediator.Send(request);
+            return Ok(response);
+        }
 
         /*[HttpPost("verify-reset-token")]
         [AllowAnonymous]

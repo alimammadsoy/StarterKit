@@ -7,6 +7,7 @@ using StarterKit.Application.Abstractions.Token;
 using StarterKit.Application.DTOs.Auth;
 using StarterKit.Application.Exceptions;
 using StarterKit.Application.Helpers;
+using StarterKit.Application.Repositories.UserRefreshToken;
 using StarterKit.Domain.Entities.Identity;
 using System.Text;
 
@@ -21,13 +22,18 @@ namespace StarterKit.Persistence.Services
         readonly SignInManager<Domain.Entities.Identity.AppUser> _signInManager;
         readonly IUserService _userService;
         readonly IMailService _mailService;
+        readonly IUserRefreshTokenReadRepository _userRefreshTokenRead;
+        readonly IUserRefreshTokenWriteRepository _userRefreshTokenWrite;
+
         public AuthService(IHttpClientFactory httpClientFactory,
             IConfiguration configuration,
             UserManager<Domain.Entities.Identity.AppUser> userManager,
             ITokenHandler tokenHandler,
             SignInManager<AppUser> signInManager,
             IUserService userService,
-            IMailService mailService)
+            IMailService mailService,
+            IUserRefreshTokenReadRepository userRefreshTokenRead,
+            IUserRefreshTokenWriteRepository userRefreshTokenWrite)
         {
             _httpClient = httpClientFactory.CreateClient();
             _configuration = configuration;
@@ -36,7 +42,10 @@ namespace StarterKit.Persistence.Services
             _signInManager = signInManager;
             _userService = userService;
             _mailService = mailService;
+            _userRefreshTokenRead = userRefreshTokenRead;
+            _userRefreshTokenWrite = userRefreshTokenWrite;
         }
+
         async Task<JwtTokenDto> CreateUserExternalAsync(AppUser user, string email, string name, string surname, UserLoginInfo info, int accessTokenLifeTime)
         {
             bool result = user != null;
@@ -62,7 +71,7 @@ namespace StarterKit.Persistence.Services
                 await _userManager.AddLoginAsync(user, info); //AspNetUserLogins
 
                 JwtTokenDto token = await _tokenHandler.CreateAccessToken(accessTokenLifeTime, user);
-                await _userService.UpdateRefreshTokenAsync(token.RefreshToken, user, token.Expiration, 15);
+                await _userService.UpdateRefreshTokenAsync(token.RefreshToken, user, Convert.ToInt32(_configuration["JWT:RefreshExpireAt"]));
                 return token;
             }
             throw new Exception("Invalid external authentication.");
@@ -121,24 +130,36 @@ namespace StarterKit.Persistence.Services
             if (result.Succeeded) //Authentication başarılı!
             {
                 JwtTokenDto token = await _tokenHandler.CreateAccessToken(accessTokenLifeTime, user);
-                await _userService.UpdateRefreshTokenAsync(token.RefreshToken, user, token.Expiration, 15);
+                await _userService.UpdateRefreshTokenAsync(token.RefreshToken, user, Convert.ToInt32(_configuration["JWT:RefreshExpireAt"]));
                 return token;
             }
-            throw new NotFoundException("İstifadəçi adı və ya şifrə yanlışdır");
+            throw new UnAuthorizedException("Email və ya şifrə yanlışdır");
         }
 
         public async Task<JwtTokenDto> RefreshTokenLoginAsync(string refreshToken)
         {
-            AppUser? user = await _userManager.Users.FirstOrDefaultAsync(u => u.RefreshToken == refreshToken);
-            if (user != null && user?.RefreshTokenEndDate > DateTime.UtcNow && !user.IsDeleted)
+            var userRefreshToken = await _userRefreshTokenRead.GetSingleAsync(rt => rt.RefreshToken == refreshToken && !rt.IsDeleted,
+                include => include.Include(rt => rt.User));
+
+            if (userRefreshToken == null)
+                throw new UnAuthorizedException("InvalidRefreshToken");
+
+            var user = userRefreshToken.User;
+
+            if (userRefreshToken.ExpiresAt <= DateTime.UtcNow || user.IsDeleted)
             {
-                JwtTokenDto token = await _tokenHandler.CreateAccessToken(7200, user);
-                await _userService.UpdateRefreshTokenAsync(token.RefreshToken, user, token.Expiration, 300);
-                return token;
+                await _userRefreshTokenWrite.RemoveAsync(userRefreshToken.Id);
+                await _userRefreshTokenWrite.SaveAsync();
+                throw new UnAuthorizedException("InvalidRefreshToken");
             }
-            else
-                throw new NotFoundException();
+
+            JwtTokenDto token = await _tokenHandler.CreateAccessToken(Convert.ToInt32(_configuration["JWT:ExpireAt"]), user);
+
+            await _userService.UpdateRefreshTokenAsync(token.RefreshToken, user, Convert.ToInt32(_configuration["JWT:RefreshExpireAt"]));
+
+            return token;
         }
+
 
         public async Task PasswordResetAsnyc(string email)
         {

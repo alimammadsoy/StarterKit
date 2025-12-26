@@ -13,7 +13,7 @@ namespace StarterKit.Application.Exceptions
         {
             Errors = failures
                 .GroupBy(
-                    failure => JsonNamingPolicy.CamelCase.ConvertName(failure.PropertyName),
+                    failure => JsonNamingPolicy.SnakeCaseLower.ConvertName(failure.PropertyName),
                     failure => failure.ErrorMessage
                 )
                 .ToDictionary(

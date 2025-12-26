@@ -1,12 +1,11 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using StarterKit.Application.Abstractions.Services;
-using StarterKit.Application.Consts;
-using StarterKit.Application.DTOs.Role;
 using StarterKit.Application.DTOs.User;
 using StarterKit.Application.Exceptions;
 using StarterKit.Application.Helpers;
 using StarterKit.Application.Repositories.Endpoint;
+using StarterKit.Application.Repositories.UserRefreshToken;
 using StarterKit.Domain.Entities.EndpointAggregate;
 using StarterKit.Domain.Entities.Identity;
 
@@ -17,13 +16,18 @@ namespace StarterKit.Persistence.Services
         private readonly UserManager<Domain.Entities.Identity.AppUser> _userManager;
         private readonly IEndpointReadRepository _endpointReadRepository;
         private readonly RoleManager<AppRole> _roleManager;
+        private readonly IUserRefreshTokenReadRepository _userRefreshTokenRead;
+        private readonly IUserRefreshTokenWriteRepository _userRefreshTokenWrite;
 
         public UserService(UserManager<AppUser> userManager,
-            IEndpointReadRepository endpointReadRepository, RoleManager<AppRole> roleManager)
+            IEndpointReadRepository endpointReadRepository, RoleManager<AppRole> roleManager,
+            IUserRefreshTokenReadRepository userRefreshTokenRead, IUserRefreshTokenWriteRepository userRefreshTokenWrite)
         {
             _userManager = userManager;
             _endpointReadRepository = endpointReadRepository;
             _roleManager = roleManager;
+            _userRefreshTokenRead = userRefreshTokenRead;
+            _userRefreshTokenWrite = userRefreshTokenWrite;
         }
 
         public async Task<CreateUserResponse> CreateAsync(CreateUser model)
@@ -54,7 +58,7 @@ namespace StarterKit.Persistence.Services
 
             return response;
         }
-        public async Task UpdateRefreshTokenAsync(string refreshToken, AppUser user, DateTime accessTokenDate, int addOnAccessTokenDate)
+        /*public async Task UpdateRefreshTokenAsync(string refreshToken, AppUser user, DateTime accessTokenDate, int addOnAccessTokenDate)
         {
             if (user != null)
             {
@@ -64,8 +68,32 @@ namespace StarterKit.Persistence.Services
             }
             else
                 throw new NotFoundException();
+        }*/
+
+        public async Task UpdateRefreshTokenAsync(string refreshToken, AppUser user, int refreshTokenLifetimeSeconds)
+        {
+            if (user == null)
+                throw new NotFoundException("User not found");
+
+            var oldToken = await _userRefreshTokenRead.GetSingleAsync(x => x.UserId == user.Id && !x.IsDeleted);
+
+            if (oldToken != null)
+            {
+                await _userRefreshTokenWrite.RemoveAsync(oldToken.Id);
+                await _userRefreshTokenWrite.SaveAsync();
+            }
+
+            var newRefreshToken = new UserRefreshToken();
+            newRefreshToken.SetDetails(refreshToken, DateTime.UtcNow.AddSeconds(refreshTokenLifetimeSeconds), user.Id);
+
+            // 3) Yeni token DB-ə əlavə et
+            await _userRefreshTokenWrite.AddAsync(newRefreshToken);
+            await _userRefreshTokenWrite.SaveAsync();
         }
+
+
         public async Task UpdatePasswordAsync(int userId, string resetToken, string newPassword)
+
         {
             AppUser user = await _userManager.FindByIdAsync(userId.ToString());
             if (user != null)

@@ -6,5 +6,6 @@ namespace StarterKit.Application.Features.Commands.Role.CreateRole
     public class CreateRoleCommandRequest : IRequest<ResponseDto>
     {
         public string Name { get; set; }
+        public int?[] PermissionIds { get; set; }
     }
 }

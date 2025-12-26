@@ -8,6 +8,7 @@ using StarterKit.Application.Features.Command.AppUser.UpdateUser;
 using StarterKit.Application.Features.Commands.AppUser.UpdatePassword;
 using StarterKit.Application.Features.Queries.User.GetAllUsers;
 using StarterKit.Application.Features.Queries.User.GetById;
+using StarterKit.WebApi.Attributes;
 
 namespace StarterKit.WebApi.Controllers
 {
@@ -15,13 +16,16 @@ namespace StarterKit.WebApi.Controllers
     {
         [HttpPost]
         [Authorize]
-        [AuthorizeDefinition(ActionType = ActionType.Writing, Definition = "Create Users", Menu = "Users")]
+        [LocalizeResponse]
+        [AuthorizeDefinition(ActionType = ActionType.Writing, Definition = "users.create", Menu = "Users")]
         public async Task<IActionResult> CreateUser(CreateUserCommandRequest request)
         {
             var response = await Mediator.Send(request);
-            return Ok(response);
+            return StatusCode(StatusCodes.Status201Created, response);
+            //return Ok(response);
         }
 
+        [LocalizeResponse]
         [HttpPost("update-password")]
         public async Task<IActionResult> UpdatePassword([FromBody] UpdatePasswordCommandRequest updatePasswordCommandRequest)
         {
@@ -31,7 +35,7 @@ namespace StarterKit.WebApi.Controllers
 
         [HttpGet]
         [Authorize]
-        [AuthorizeDefinition(ActionType = ActionType.Reading, Definition = "Get All Users", Menu = "Users")]
+        [AuthorizeDefinition(ActionType = ActionType.Reading, Definition = "users.views", Menu = "Users")]
         public async Task<IActionResult> GetAllUsers([FromQuery] GetAllUsersQueryRequest request)
         {
             var response = await Mediator.Send(request);
@@ -40,7 +44,7 @@ namespace StarterKit.WebApi.Controllers
 
         [HttpGet("{id}")]
         [Authorize]
-        [AuthorizeDefinition(ActionType = ActionType.Reading, Definition = "Get User By Id", Menu = "Users")]
+        [AuthorizeDefinition(ActionType = ActionType.Reading, Definition = "users.view", Menu = "Users")]
         public async Task<IActionResult> GetUserById([FromRoute] int id)
         {
             var response = await Mediator.Send(new GetUserByIdQueryRequest(id));
@@ -49,7 +53,7 @@ namespace StarterKit.WebApi.Controllers
 
         [HttpPut("{id}")]
         [Authorize]
-        [AuthorizeDefinition(ActionType = ActionType.Updating, Definition = "Update User", Menu = "Users")]
+        [AuthorizeDefinition(ActionType = ActionType.Updating, Definition = "users.update", Menu = "Users")]
         public async Task<IActionResult> UpdateUser([FromRoute] int id, [FromBody] UpdateUserCommandRequest request)
         {
             request.Id = id;
@@ -59,7 +63,7 @@ namespace StarterKit.WebApi.Controllers
 
         [HttpDelete("{id}")]
         [Authorize]
-        [AuthorizeDefinition(ActionType = ActionType.Deleting, Definition = "Delete User", Menu = "Users")]
+        [AuthorizeDefinition(ActionType = ActionType.Deleting, Definition = "users.delete", Menu = "Users")]
         public async Task<IActionResult> DeleteUser([FromRoute] int id)
         {
             var response = await Mediator.Send(new DeleteUserCommandRequest(id));

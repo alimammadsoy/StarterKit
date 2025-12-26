@@ -1,7 +1,6 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Identity;
 using StarterKit.Application.Abstractions.Services;
-using StarterKit.Application.Consts;
 using StarterKit.Application.Exceptions;
 using StarterKit.Application.Repositories.TemporaryUser;
 using StarterKit.Domain.Entities.Identity;
@@ -9,7 +8,7 @@ using System.Security.Cryptography;
 
 namespace StarterKit.Application.Features.Command.AppUser.RegisterUser
 {
-    public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommandRequest, ResponseDto>
+    public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommandRequest, RegisterUserCommandResponse>
     {
         private readonly ITemporaryUserWriteRepository _temporaryUserWriteRepository;
         private readonly ITemporaryUserReadRepository _temporaryUserReadRepository;
@@ -28,44 +27,34 @@ namespace StarterKit.Application.Features.Command.AppUser.RegisterUser
             _userManager = userManager;
             _mailService = mailService;
         }
-        public async Task<ResponseDto> Handle(RegisterUserCommandRequest request, CancellationToken cancellationToken)
+        public async Task<RegisterUserCommandResponse> Handle(RegisterUserCommandRequest request, CancellationToken cancellationToken)
         {
-            DateTime expiresAt = DateTime.UtcNow.AddSeconds(30);
+            DateTime expiresAt = DateTime.UtcNow.AddMinutes(5);
             // 1. Email artıq real istifadecide varsa qeydiyyat mumkun deyil
             var existingUser = await _userManager.FindByEmailAsync(request.Email);
             if (existingUser != null)
-                throw new UserAlreadyActivatedException("UserAlreadyActivated");
+            {
+                throw new CustomHttpException(409, new
+                {
+                    error_code = 1001,
+                    message = "UserAlreadyActivated"
+                });
+            }
 
             // 2. Temporary user varsa, yoxlayiriq
             var existingTemp = await _temporaryUserReadRepository.GetSingleAsync(x => x.Email == request.Email && !x.IsDeleted);
 
             if (existingTemp != null)
             {
-                // Eger istifadeci cox tez-tez kod isteyirse (meselen 1 deqiqe kecmeyibse)
-                if (existingTemp.LastSentAt != null)
-                {
-                    var secondsSinceLastSend = (DateTime.UtcNow - existingTemp.LastSentAt.Value).TotalSeconds;
-                    if (secondsSinceLastSend < 60)
-                    {
-                        throw new BadRequestException("Zəhmət olmasa, yeni kod istəmədən əvvəl bir az gözləyin.");
-                    }
-                }
-
-                // Eger kod hele de etibarlidirsa, yeniden gonderirik
+                // Eger kod hele de etibarlidirsa, yeniden gondermesini onleyirik
                 if (existingTemp.ExpiresAt > DateTime.UtcNow)
                 {
-                    await ResendCodeAsync(existingTemp, request.Email);
-
-                    existingTemp.IncrementResendCount();
-
-                    _temporaryUserWriteRepository.Update(existingTemp);
-                    await _temporaryUserWriteRepository.SaveAsync();
-
-                    return new ResponseDto
+                    throw new CustomHttpException(409, new
                     {
-                        //Message = "Təsdiqləmə kodu email ünvanınıza göndərildi."
-                        Message = "VerificationCodeSent"
-                    };
+                        error_code = 1002,
+                        message = "VerificationCodeAlreadySent",
+                        expires_at = existingTemp.ExpiresAt
+                    });
                 }
 
                 // Eger kodun vaxti kecibse yenileyirik
@@ -79,10 +68,10 @@ namespace StarterKit.Application.Features.Command.AppUser.RegisterUser
 
                 await SendVerificationMailAsync(request.Email, newCode);
 
-                return new ResponseDto
+                return new()
                 {
-                    //Message = "Təsdiqləmə kodu email ünvanınıza göndərildi."
-                    Message = "VerificationCodeSent"
+                    Message = "VerificationCodeSent",
+                    ExpiresAt = expiresAt
                 };
             }
 
@@ -90,7 +79,6 @@ namespace StarterKit.Application.Features.Command.AppUser.RegisterUser
             TemporaryUser tempUser = new();
 
             int verificationCode = GenerateVerificationCode();
-            //DateTime expiresAt = DateTime.UtcNow.AddSeconds(30);
 
             var tempAppUser = new Domain.Entities.Identity.AppUser { UserName = request.Email, Email = request.Email };
             var passwordHasher = new PasswordHasher<Domain.Entities.Identity.AppUser>();
@@ -113,23 +101,11 @@ namespace StarterKit.Application.Features.Command.AppUser.RegisterUser
 
             await SendVerificationMailAsync(request.Email, verificationCode);
 
-            return new ResponseDto
+            return new()
             {
-                //Message = "Qeydiyyat tamamlandı. Email təsdiqləmək üçün 6 rəqəmli kod göndərildi."
-                Message = "RegistrationCompleted"
+                Message = "RegistrationCompleted",
+                ExpiresAt = expiresAt
             };
-        }
-
-
-        private async Task ResendCodeAsync(TemporaryUser tempUser, string email)
-        {
-            int code = tempUser.VerificationCode; // eyni kodu saxlayiriq
-            tempUser.SetLastSentAt(DateTime.UtcNow);
-
-            _temporaryUserWriteRepository.Update(tempUser);
-            await _temporaryUserWriteRepository.SaveAsync();
-
-            await SendVerificationMailAsync(email, code);
         }
 
         private async Task SendVerificationMailAsync(string email, int code)
@@ -152,5 +128,4 @@ namespace StarterKit.Application.Features.Command.AppUser.RegisterUser
             return (randomNumber % 900000) + 100000;
         }
     }
-
 }

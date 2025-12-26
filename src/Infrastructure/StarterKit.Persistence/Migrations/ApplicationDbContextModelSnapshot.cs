@@ -336,14 +336,6 @@ namespace StarterKit.Persistence.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("phone_number_confirmed");
 
-                    b.Property<string>("RefreshToken")
-                        .HasColumnType("text")
-                        .HasColumnName("refresh_token");
-
-                    b.Property<DateTime?>("RefreshTokenEndDate")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("refresh_token_end_date");
-
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("text")
                         .HasColumnName("security_stamp");
@@ -372,6 +364,56 @@ namespace StarterKit.Persistence.Migrations
                         .HasDatabaseName("UserNameIndex");
 
                     b.ToTable("AspNetUsers", (string)null);
+                });
+
+            modelBuilder.Entity("StarterKit.Domain.Entities.Identity.PasswordReset", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Code")
+                        .HasColumnType("integer")
+                        .HasColumnName("code");
+
+                    b.Property<int>("CreatedById")
+                        .HasColumnType("integer")
+                        .HasColumnName("created_by_id");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_date");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<DateTime?>("LastUpdateDateTime")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_update_date_time");
+
+                    b.Property<int?>("UpdateById")
+                        .HasColumnType("integer")
+                        .HasColumnName("update_by_id");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_password_resets");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_password_resets_user_id");
+
+                    b.ToTable("password_resets", (string)null);
                 });
 
             modelBuilder.Entity("StarterKit.Domain.Entities.Identity.TemporaryUser", b =>
@@ -443,6 +485,44 @@ namespace StarterKit.Persistence.Migrations
                         .HasName("pk_temporary_users");
 
                     b.ToTable("temporary_users", (string)null);
+                });
+
+            modelBuilder.Entity("StarterKit.Domain.Entities.Identity.UserRefreshToken", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_date");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<string>("RefreshToken")
+                        .HasColumnType("text")
+                        .HasColumnName("refresh_token");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_user_refresh_tokens");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_user_refresh_tokens_user_id");
+
+                    b.ToTable("user_refresh_tokens", (string)null);
                 });
 
             modelBuilder.Entity("StarterKit.Domain.Entities.MenuAggregate.Menu", b =>
@@ -566,6 +646,35 @@ namespace StarterKit.Persistence.Migrations
                         .HasConstraintName("fk_endpoints_menus_menu_id");
 
                     b.Navigation("Menu");
+                });
+
+            modelBuilder.Entity("StarterKit.Domain.Entities.Identity.PasswordReset", b =>
+                {
+                    b.HasOne("StarterKit.Domain.Entities.Identity.AppUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_password_resets_users_user_id");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("StarterKit.Domain.Entities.Identity.UserRefreshToken", b =>
+                {
+                    b.HasOne("StarterKit.Domain.Entities.Identity.AppUser", "User")
+                        .WithMany("RefreshTokens")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_user_refresh_tokens_users_user_id");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("StarterKit.Domain.Entities.Identity.AppUser", b =>
+                {
+                    b.Navigation("RefreshTokens");
                 });
 
             modelBuilder.Entity("StarterKit.Domain.Entities.MenuAggregate.Menu", b =>

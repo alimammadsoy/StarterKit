@@ -2,18 +2,24 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpLogging;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using StarterKit.Application;
 using StarterKit.Application.Abstractions.Services;
+using StarterKit.Application.Features.Command.AppUser.CreateUser;
+using StarterKit.Domain.Entities.Identity;
 using StarterKit.Infrastructure;
 using StarterKit.Infrastructure.Services;
 using StarterKit.Persistence;
 using StarterKit.Persistence.Contexts;
+using StarterKit.Persistence.Services;
 using StarterKit.WebApi.Configurations;
 using StarterKit.WebApi.Filters;
 using StarterKit.WebApi.Middlewares;
@@ -115,6 +121,16 @@ builder.Services.Configure<FormOptions>(x =>
     x.ValueLengthLimit = int.MaxValue;
     x.MultipartBodyLengthLimit = int.MaxValue;
 });
+
+builder.Services.Configure<JsonOptions>(options =>
+{
+    options.JsonSerializerOptions.PropertyNamingPolicy = new SnakeCaseNamingPolicy();
+});
+
+builder.Services.RemoveAll<IUserValidator<AppUser>>();
+
+builder.Services.AddScoped<IUserStore<AppUser>, CustomUserStore>();
+builder.Services.AddScoped<IUserValidator<AppUser>, CustomUserValidator>();
 
 /*builder.Services.Configure<JsonOptions>(options =>
 {
@@ -219,7 +235,7 @@ if (app.Environment.IsDevelopment())
         c.DocumentTitle = "StarterKit API";
         c.DocExpansion(DocExpansion.List);
     });
-    //app.UseDeveloperExceptionPage();
+    //app.UseDevDomain.Entities.Identity.AppUsereloperExceptionPage();
 }
 
 app.Use(async (context, next) =>

@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using StarterKit.Application.Consts;
+using System.Text.Json.Serialization;
 
 namespace StarterKit.Application.Features.Command.AppUser.VerifyEmail
 {

@@ -63,8 +63,29 @@ namespace StarterKit.Application.Features.Queries.Auth
             var permissions = await _endpointReadRepository.Table
                 .Include(e => e.Roles)
                 .Where(e => !e.IsDeleted && e.Roles.Any(r => roles.Contains(r.Name)))
-                .Select(e => new EndpointDto { Id = e.Id, Name = e.Definition })
+                .Select(e => new EndpointNameDto { Name = e.Definition })
                 .ToListAsync(cancellationToken);
+
+            var groupedPermissions = permissions
+                .Where(p => p.Name.Contains('.'))
+                .Select(p => new
+                {
+                    Prefix = p.Name.Split('.')[0].Trim().ToLower(),
+                    Action = p.Name.Split('.')[1].Trim().ToLower()
+                })
+                .GroupBy(p => p.Prefix)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.Select(x => x.Action).ToList()
+                );
+
+
+            if (roles.Contains("SuperAdmin"))
+            {
+                permissions = await _endpointReadRepository.GetWhere(e => !e.IsDeleted)
+                .Select(e => new EndpointNameDto { Name = e.Definition })
+                .ToListAsync(cancellationToken);
+            }
 
             return new GetProfileQueryResponse
             {
@@ -74,7 +95,7 @@ namespace StarterKit.Application.Features.Queries.Auth
                 Surname = user.Surname,
                 Phone = user.PhoneNumber,
                 Roles = roles,
-                Permissions = permissions
+                Permissions = groupedPermissions
             };
         }
     }

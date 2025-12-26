@@ -21,6 +21,15 @@ namespace StarterKit.Application.Features.Command.AppUser.DeleteUser
                 throw new NotFoundException("İstifadəçi tapılmadı");
 
             user.IsDeleted = true;
+
+            var guid = Guid.NewGuid().ToString("N");
+
+            user.Email = $"deleted_{guid}_{user.Email}";
+            user.NormalizedEmail = user.Email.ToUpper();
+
+            user.UserName = $"deleted_{guid}_{user.UserName}";
+            user.NormalizedUserName = user.UserName.ToUpper();
+
             var result = await _userManager.UpdateAsync(user);
 
             if (!result.Succeeded)

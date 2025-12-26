@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using AutoMapper;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using StarterKit.Application.Abstractions.Services;
 using StarterKit.Application.Consts;
@@ -9,15 +10,19 @@ namespace StarterKit.Application.Features.Queries.Role.GetRoles
     public class GetRolesQueryHandler : IRequestHandler<GetRolesQueryRequest, AllDto<RoleDto>>
     {
         readonly IRoleService _roleService;
+        private readonly IMapper _mapper;
 
-        public GetRolesQueryHandler(IRoleService roleService)
+        public GetRolesQueryHandler(IRoleService roleService, IMapper mapper)
         {
             _roleService = roleService;
+            _mapper = mapper;
         }
 
         public async Task<AllDto<RoleDto>> Handle(GetRolesQueryRequest request, CancellationToken cancellationToken)
         {
             var roles = _roleService.GetAllRolesAsync();
+
+            roles = roles.ApplySortingAndFiltering(request.ColumnName, request.OrderBy, request.Search);
 
             var totalCount = await roles.CountAsync();
 
@@ -30,13 +35,7 @@ namespace StarterKit.Application.Features.Queries.Role.GetRoles
                 ? (int)Math.Ceiling(totalCount / (double)request.PageSize)
                 : 1;
 
-            List<RoleDto> roleDtos = await roles
-                .Select(r => new RoleDto
-                {
-                    Id = r.Id,
-                    Name = r.Name
-                })
-                .ToListAsync(cancellationToken);
+            List<RoleDto> roleDtos = _mapper.Map<List<RoleDto>>(await roles.ToListAsync(cancellationToken));
 
 
             return new AllDto<RoleDto>

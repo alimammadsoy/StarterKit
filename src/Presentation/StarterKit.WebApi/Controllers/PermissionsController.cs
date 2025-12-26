@@ -20,7 +20,7 @@ namespace StarterKit.WebApi.Controllers
         }
 
         [HttpGet]
-        [AuthorizeDefinition(ActionType = ActionType.Reading, Definition = "Get Permissions", Menu = "Permissions")]
+        [AuthorizeDefinition(ActionType = ActionType.Reading, Definition = "permissions.views", Menu = "Permissions")]
         public async Task<IActionResult> GetPermissions([FromQuery] GetEndpointsQueryRequest request)
         {
             var response = await Mediator.Send(request);
@@ -28,7 +28,7 @@ namespace StarterKit.WebApi.Controllers
         }
 
         [HttpGet("{id}")]
-        [AuthorizeDefinition(ActionType = ActionType.Reading, Definition = "Get Permission By Id", Menu = "Permissions")]
+        [AuthorizeDefinition(ActionType = ActionType.Reading, Definition = "permissions.view", Menu = "Permissions")]
         public async Task<IActionResult> GetPermissionById([FromRoute] int id)
         {
             var response = await Mediator.Send(new GetEndpointByIdQueryRequest(id));

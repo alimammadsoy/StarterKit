@@ -1,6 +1,5 @@
 ﻿using MediatR;
 using StarterKit.Application.Abstractions.Services;
-using StarterKit.Application.Consts;
 using StarterKit.Application.Exceptions;
 using StarterKit.Application.Repositories.TemporaryUser;
 using System.Security.Cryptography;
@@ -8,7 +7,7 @@ using System.Security.Cryptography;
 namespace StarterKit.Application.Features.Command.AppUser.ResendVerificationCode
 {
     public class ResendVerificationCodeCommandHandler
-        : IRequestHandler<ResendVerificationCodeCommandRequest, ResponseDto>
+        : IRequestHandler<ResendVerificationCodeCommandRequest, ResendVerificationCodeCommandResponse>
     {
         private readonly ITemporaryUserReadRepository _temporaryUserReadRepository;
         private readonly ITemporaryUserWriteRepository _temporaryUserWriteRepository;
@@ -25,7 +24,7 @@ namespace StarterKit.Application.Features.Command.AppUser.ResendVerificationCode
             _mailService = mailService;
         }
 
-        public async Task<ResponseDto> Handle(
+        public async Task<ResendVerificationCodeCommandResponse> Handle(
             ResendVerificationCodeCommandRequest request,
             CancellationToken cancellationToken)
         {
@@ -36,7 +35,7 @@ namespace StarterKit.Application.Features.Command.AppUser.ResendVerificationCode
             if (tempUser == null)
                 throw new BadRequestException("NotRegistered");
 
-            // 2️. Əgər kod hələ etibarlıdırsa — yeni kod göndərilməməlidir
+            // 2️. Əgər kod hələ etibarlıdırsa yeni kod göndərilməməlidir
             if (tempUser.ExpiresAt > DateTime.UtcNow)
                 throw new BadRequestException("VerificationCodeAlreadySent");
             
@@ -59,9 +58,10 @@ namespace StarterKit.Application.Features.Command.AppUser.ResendVerificationCode
             await _mailService.SendMailAsync(request.Email, newSubject, newBody);
 
             // 5. Mesaj qaytarılır
-            return new ResponseDto
+            return new()
             {
-                Message = "VerificationCodeResent"
+                Message = "VerificationCodeResent",
+                ExpiresAt = expiresAt
             };
         }
 

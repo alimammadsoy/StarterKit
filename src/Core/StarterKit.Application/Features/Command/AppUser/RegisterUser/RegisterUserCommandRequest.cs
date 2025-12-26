@@ -1,9 +1,8 @@
 ﻿using MediatR;
-using StarterKit.Application.Consts;
 
 namespace StarterKit.Application.Features.Command.AppUser.RegisterUser
 {
-    public class RegisterUserCommandRequest : IRequest<ResponseDto>
+    public class RegisterUserCommandRequest : IRequest<RegisterUserCommandResponse>
     {
         public string Name { get; set; }
         public string Surname { get; set; }

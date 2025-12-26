@@ -24,13 +24,14 @@
             RuleFor(x => x.Phone)
                 .Cascade(CascadeMode.Stop)
                 .NotEmpty().WithMessage("PhoneRequired")
-                .Matches(@"^\+?[0-9]+$").WithMessage("PhoneInvalid");
+                .Matches(@"^\+?[0-9]{7,14}$").WithMessage("PhoneInvalid");
 
             RuleFor(x => x.Password)
                 .Cascade(CascadeMode.Stop)
                 .NotEmpty().WithMessage("PasswordRequired")
                 .MinimumLength(8).WithMessage("PasswordMinLength")
                 .Matches(@"[A-Z]+").WithMessage("PasswordUppercaseRequired")    // ən az 1 böyük hərf
+                .Matches(@"[a-z]+").WithMessage("PasswordLowercaseRequired")    // ən az 1 kicik hərf
                 .Matches(@"[!@#$%^&*()_+\[\]{}|;:,.<>/?]").WithMessage("PasswordSpecialCharRequired"); // ən az 1 xüsusi simvol
 
 

@@ -134,7 +134,7 @@ namespace StarterKit.WebApi.Middlewares
             try
             {
                 if (!string.IsNullOrEmpty(userIdClaim))
-                    userRoles = await userService.GetRolesToUserAsync(userIdClaim);
+                    userRoles = await userService.   GetRolesToUserAsync(userIdClaim);
                 else if (!string.IsNullOrEmpty(user.Identity.Name))
                     userRoles = await userService.GetRolesToUserAsync(user.Identity.Name);
             }

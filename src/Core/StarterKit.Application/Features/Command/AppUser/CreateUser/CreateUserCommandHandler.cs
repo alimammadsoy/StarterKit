@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using StarterKit.Application.Abstractions.Services;
 using StarterKit.Application.Consts;
+using StarterKit.Application.Exceptions;
 using StarterKit.Domain.Entities.Identity;
 
 namespace StarterKit.Application.Features.Command.AppUser.CreateUser
@@ -22,6 +23,11 @@ namespace StarterKit.Application.Features.Command.AppUser.CreateUser
 
         public async Task<ResponseDto> Handle(CreateUserCommandRequest request, CancellationToken cancellationToken)
         {
+            var existingUser = await _userManager.FindByEmailAsync(request.Email);
+
+            if (existingUser != null)
+                throw new UserAlreadyExistedException("UserAlreadyActivated");
+            
             var createResponse = await _userService.CreateAsync(new()
             {
                 Email = request.Email,
@@ -48,12 +54,16 @@ namespace StarterKit.Application.Features.Command.AppUser.CreateUser
                         await _userService.AssignRoleToUserAsnyc(user.Id, roleNames.ToArray());
                     }
                 }
-            }
 
-            return new ResponseDto
+                return new()
+                {
+                    Message = "EmailVerified"
+                };
+            }
+            else
             {
-                Message = createResponse?.Message ?? "User creation failed."
-            };
+                throw new BadRequestException(createResponse?.Message ?? "User creation failed.");
+            }
         }
     }
 }

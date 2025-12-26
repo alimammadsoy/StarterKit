@@ -35,16 +35,16 @@ namespace StarterKit.Application.Features.Command.AppUser.UpdateUser
             if (!string.IsNullOrWhiteSpace(request.Surname))
                 user.Name = request.Surname;
 
-            if (!string.IsNullOrWhiteSpace(request.PhoneNumber) && user.PhoneNumber != request.PhoneNumber)
+            if (!string.IsNullOrWhiteSpace(request.Phone) && user.PhoneNumber != request.Phone)
             {
-                user.PhoneNumber = request.PhoneNumber;
+                user.PhoneNumber = request.Phone;
             }
 
             if (!string.IsNullOrWhiteSpace(request.Email) && user.Email != request.Email)
             {
                 var existingUser = await _userManager.FindByEmailAsync(request.Email);
                 if (existingUser != null && existingUser.Id != user.Id)
-                    throw new UserAlreadyExistedException("Bu email artıq başqa istifadəçi tərəfindən istifadə olunur.");
+                    throw new UserAlreadyExistedException("UserAlreadyActivated");
 
                 user.Email = request.Email;
                 user.NormalizedEmail = request.Email.ToUpperInvariant();
@@ -67,7 +67,7 @@ namespace StarterKit.Application.Features.Command.AppUser.UpdateUser
                 await _userService.AssignRoleToUserAsnyc(request.Id, roleNames.ToArray());
             }
 
-            return new ResponseDto { Message = "İstifadəçi məlumatları yeniləndi" };
+            return new ResponseDto { Message = "UserUpdatedSuccessfully" };
         }
     }
 }

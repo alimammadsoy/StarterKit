@@ -33,7 +33,7 @@ namespace StarterKit.Persistence.Services
 
         public IQueryable<AppRole> GetAllRolesAsync()
         {
-            return _roleManager.Roles.OrderBy(r => r.Id);
+            return _roleManager.Roles.Include(r => r.Endpoints).OrderBy(r => r.Id);
         }
 
         public async Task<AppRole> GetRoleById(int id)
